@@ -13,10 +13,10 @@
 	</properties>
 
 	<dependencies>
-		<dependency>
-			<groupId>x.mvmn.jlibgphoto2</groupId>
-			<artifactId>jlibgphoto2</artifactId>
-			<version>2.0</version>
+        <dependency>
+			<groupId>net.java.dev.jna</groupId>
+			<artifactId>jna</artifactId>
+			<version>4.1.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -84,6 +84,11 @@
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-jexl3</artifactId>
 			<version>3.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.pi4j</groupId>
+			<artifactId>pi4j-core</artifactId>
+			<version>1.1</version>
 		</dependency>
 	</dependencies>
 
