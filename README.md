@@ -23,9 +23,9 @@ Like this project in python the aim of this fork is to do a java controller for 
 Notes:
 - See also GPhoto2 for Raspberry Pi - https://github.com/gonzalo/gphoto2-updater
 - See also for more informations about original projects: 
-https://github.com/mvmn/gp2srv
-https://github.com/mvmn/jlibgphoto2 
-https://github.com/mvmn/gphoto2-jna
-https://www.instructables.com/id/Raspberry-Pi-photo-booth-controller/
-https://github.com/sojojo/RPi_photobooth
+	- https://github.com/mvmn/gp2srv
+	- https://github.com/mvmn/jlibgphoto2 
+	- https://github.com/mvmn/gphoto2-jna
+	- https://www.instructables.com/id/Raspberry-Pi-photo-booth-controller/
+	- https://github.com/sojojo/RPi_photobooth
 
