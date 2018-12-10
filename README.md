@@ -1,42 +1,13 @@
-# gphoto2-jna
-JNA bridge to GPhoto2 native library
-
-## Overview
-The code in package `x.mvmn.gphoto2.jna` was generated using [JNAerator](https://en.wikipedia.org/wiki/JNAerator):
-```
-java -jar jnaerator-0.12-shaded.jar -library gphoto2 /usr/local/lib/libgphoto2.dylib /usr/local/include/gphoto2/gphoto2/gphoto2.h -I/usr/local/include/gphoto2/ -mode Maven -noLibBundle -package x.mvmn.gphoto2.jna -f -runtime JNA
-```
-Certain modifications were made to generated code to avoid dependencies on JNAerator types - some of the internal GPhoto2 methods that were picked up by JNAerator had to be commented out (namely the _gp_file_slurp_ methods), some methods were added overrides with ByReference instead of Pointer parameters, some structures were made non-abstract (generated as abstract by JNAerator for no obvious reason, making them impossible to use) etc.
-
-## Demos
-See [gphoto2-jna-demos](https://github.com/mvmn/gphoto2-jna-demos) repo for demos.
-
-
-# jlibgphoto2
-Java library for convenient access to native libgphoto2 that uses under the hood the JNAerator generated [gphoto2-jna](https://github.com/mvmn/gphoto2-jna).
-
-
-# GPhoto2 Server
-
-## Versions 1.0+
+# GPhoto2 Server v2.8
 This is a Jetty-powered WebApp that serves as a web-interface for GPhoto2 program.
-It can be put on any machine that has libgphoto2 and Java 1.5 or above. The calls to GPhoto2 are done using JNA, via https://github.com/mvmn/jlibgphoto2
+It can be put on any machine that has libgphoto2 and Java 1.5 or above. The calls to GPhoto2 are done using JNA.
 
-Command-line arguments:
-- port - TCP port to listen on. 
-Optional. Default port is 8080.
-- logLevel - logging level (one of TRACE, DEBUG, INFO, WARN, ERROR, SEVERE, FATAL). 
-Optional. Default is INFO.
-- auth - username:password
-Optional. Enables basic HTTP authentication with provided credentials.
-
-Java System properties:
-- -Djna.library.path=/path/to/folder/with/libgphoto2.dylib/or/such - in case you get errors like "Unable to load library 'gphoto2': Native library (darwin/libgphoto2.dylib) not found in resource path" you can specify a path to folder that contains gphoto2 library folder. 
-The library path depends on your platform and method of installation (e.g. on OS X you can install gphoto2 library via Homebrew, and use custom folder for all Homebrew installations - then you would have to provide a path like ~/homebrew/lib, given that ~/homebrew is your custom folder for Homebrew installations).
+Included dependencies:
+- gphoto2-jna
+- jlibgphoto2
 
 Build dependencies:
 - LibGPhoto2 - http://www.gphoto.org
-- https://github.com/mvmn/jlibgphoto2 with transitive dependency https://github.com/mvmn/gphoto2-jna
 - JDK 8+
 - Maven 3.3+
 
@@ -44,35 +15,17 @@ Runtime dependencies:
 - LibGPhoto2 - http://www.gphoto.org
 - Java 8+ (use Java5 compatibility builds if you need to run on earlier java versions - see in releases).
 
-Example GPhoto2Server script for day-to-night timelapse shooting (on Canon 600D)
-- https://gist.github.com/mvmn/e54f0336cfca7de5b24a632266a9f3d6
+## Add GPIO and Printer
+Like this project in python the aim of this fork is to do a java controller for my photobooth based en [this](https://www.instructables.com/id/Raspberry-Pi-photo-booth-controller/)
 
-Known issues: 
-On Canon (and possibly other) cameras browsing files requires viewfinder to be closed. Thus one has to close viewfinder (which gets opened by LiveView) before going to browse page.
-I will try to address this issue in the future. 
-
-## Versions before 1.0
-This is a Jetty-powered WebApp that serves as a web-interface for GPhoto2 program.
-It can be put on any machine that has GPhoto2 (usually in PATH) and Java 1.5 or above. The calls to GPhoto2 are done using simple exec.
-
-The program is distributed as an executable JAR file + lib folder with dependencies (few more JAR files). 
-Once started, it listens on port 8080 by default (use port command line parameter to set different value).
-
-Command-line arguments:
-- gphoto2path - specify path to gphoto2 executable. 
-Optional. Location of gphoto2 will be searched in PATH by default.
-- port - TCP port to listen on. 
-Optional. Default port is 8080.
-- logLevel - logging level (one of TRACE, DEBUG, INFO, WARN, ERROR, SEVERE, FATAL). 
-Optional. Default is INFO.
-- usemocks - do not execute gphoto2 but use in-built mock gphoto2 responses (which cover around 10% of available action).
-Optional. Used for development purpopses only.
-
-Dependencies:
-- GPhoto2 - http://www.gphoto.org
-- Java version 1.5 or above
-
-Video demonstration using Raspberry Pi: https://www.youtube.com/watch?v=_aXn34VpjB8
+---
 
 Notes:
 - See also GPhoto2 for Raspberry Pi - https://github.com/gonzalo/gphoto2-updater
+- See also for more informations about original projects: 
+https://github.com/mvmn/gp2srv
+https://github.com/mvmn/jlibgphoto2 
+https://github.com/mvmn/gphoto2-jna
+https://www.instructables.com/id/Raspberry-Pi-photo-booth-controller/
+https://github.com/sojojo/RPi_photobooth
+
