@@ -1,0 +1,10 @@
+<div class="pageContent scroll">
+	<div class="siteContentElementContainer">
+		<div class="fullWidth" style="padding-top: 10px">
+			<input type="checkbox" on-change="setLiveView" />&nbsp;<span class="headline" on-click="toggleLiveView">Live view</span>		
+		</div>
+	</div>
+</div>
+<div id="liveViewContainer" style="display: none">
+</div>
+
