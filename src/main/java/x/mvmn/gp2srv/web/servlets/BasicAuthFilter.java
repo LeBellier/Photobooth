@@ -1,7 +1,6 @@
 package x.mvmn.gp2srv.web.servlets;
 
 import java.io.IOException;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -10,10 +9,10 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.codec.binary.Base64;
 
 public final class BasicAuthFilter implements Filter {
+
 	private final String username;
 	private final String password;
 

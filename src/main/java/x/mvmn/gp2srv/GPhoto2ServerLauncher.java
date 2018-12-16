@@ -47,7 +47,7 @@ public class GPhoto2ServerLauncher {
 				throw new RuntimeException("Unable to parse logLevel parameter: '" + cliOptions.getOption("logLevel").getValue() + "'.s");
 			}
 		} else {
-			logLevel = LogLevel.INFO;
+			logLevel = LogLevel.TRACE;
 		}
 		String[] auth = null;
 		if (commandLine.hasOption("auth")) {

@@ -4,18 +4,19 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import x.mvmn.gp2srv.GPhoto2Server;
 import x.mvmn.gp2srv.camera.CameraService;
+import x.mvmn.log.api.Logger;
 
 public final class LiveViewServlet extends HttpServlet {
+
 	private static final byte[] PREFIX;
 	private static final byte[] SEPARATOR;
+
 	static {
 		byte[] prefix = null;
 		byte[] separator = null;
@@ -31,9 +32,11 @@ public final class LiveViewServlet extends HttpServlet {
 	}
 	private static final long serialVersionUID = -6610127379314108183L;
 	private final CameraService cameraService;
+	protected final Logger logger;
 
-	public LiveViewServlet(final CameraService cameraService) {
+	public LiveViewServlet(final CameraService cameraService, final Logger logger) {
 		this.cameraService = cameraService;
+		this.logger = logger;
 	}
 
 	@Override
@@ -60,15 +63,17 @@ public final class LiveViewServlet extends HttpServlet {
 				System.gc();
 				Thread.yield();
 			} catch (final EOFException e) {
-				// This just means user closed preview
+				logger.error("This just means user closed preview: " + e.getClass().getName() + " " + e.getMessage());
 				break;
 			} catch (final Exception e) {
 				e.printStackTrace();
-				System.err.println("Live view stopped: " + e.getClass().getName() + " " + e.getMessage());
+				logger.error("Live view stopped: " + e.getClass().getName() + " " + e.getMessage());
 				break;
 			} finally {
+
 				GPhoto2Server.liveViewInProgress.set(false);
 			}
 		}
+		cameraService.releaseCamera();
 	}
 }

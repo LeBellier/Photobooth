@@ -8,16 +8,13 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletRequest;
-
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.ErrorHandler;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
-
 import x.mvmn.gp2srv.camera.CameraProvider;
 import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.gp2srv.camera.service.impl.CameraServiceImpl;
@@ -32,6 +29,7 @@ import x.mvmn.gp2srv.web.servlets.CameraChoiceFilter;
 import x.mvmn.gp2srv.web.servlets.CameraControlServlet;
 import x.mvmn.gp2srv.web.servlets.DevModeServlet;
 import x.mvmn.gp2srv.web.servlets.LiveViewServlet;
+import x.mvmn.gp2srv.web.servlets.RootAuthFilter;
 import x.mvmn.gp2srv.web.servlets.ScriptExecWebSocketNotifier;
 import x.mvmn.gp2srv.web.servlets.ScriptExecutionReportingWebSocketServlet;
 import x.mvmn.gp2srv.web.servlets.ScriptingServlet;
@@ -94,7 +92,6 @@ public class GPhoto2Server implements Provider<TemplateEngine>, CameraProvider {
 	public GPhoto2Server(String contextPath, Integer port, final LogLevel logLevel, final boolean mockMode, final String[] requireAuthCredentials,
 			String imageDldPath) {
 		this.logger = makeLogger(logLevel);
-
 		logger.info("Initializing...");
 
 		try {
@@ -104,6 +101,11 @@ public class GPhoto2Server implements Provider<TemplateEngine>, CameraProvider {
 			if (port == null) {
 				port = DEFAULT_PORT;
 			}
+			logger.debug("Arguments are : " + port.toString() + ", "
+					+ logLevel.toString() + ", "
+					+ mockMode + ", "
+					+ requireAuthCredentials + ", "
+					+ imageDldPath);
 
 			this.templateEngine = makeTemplateEngine();
 			this.velocityContextService = new VelocityContextService();
@@ -120,7 +122,7 @@ public class GPhoto2Server implements Provider<TemplateEngine>, CameraProvider {
 				imageDldPath = new File(userHome, "gp2srv_images").getAbsolutePath();
 			}
 			File imageDldFolder = new File(imageDldPath);
-			System.out.println("Images download folder: " + imageDldFolder.getCanonicalPath());
+			logger.info("Images download folder: " + imageDldFolder.getCanonicalPath());
 			if (!imageDldFolder.exists()) {
 				imageDldFolder.mkdirs();
 			} else if (!imageDldFolder.isDirectory()) {
@@ -154,6 +156,8 @@ public class GPhoto2Server implements Provider<TemplateEngine>, CameraProvider {
 				context.addFilter(new FilterHolder(new BasicAuthFilter(requireAuthCredentials[0], requireAuthCredentials[1])), "/*",
 						EnumSet.of(DispatcherType.REQUEST));
 			}
+			context.addFilter(new FilterHolder(new RootAuthFilter("pi", "bbr")), "/",
+					EnumSet.of(DispatcherType.REQUEST));
 			final CameraService cameraService = mockMode ? new MockCameraServiceImpl() : new CameraServiceImpl(this);
 			final CameraProvider camProvider = cameraService.getCameraProvider();
 
@@ -175,7 +179,7 @@ public class GPhoto2Server implements Provider<TemplateEngine>, CameraProvider {
 					new ServletHolder(new CameraControlServlet(cameraService, favouredCamConfSettings, velocityContextService, this, imageDldFolder, logger)),
 					"/");
 			context.addServlet(new ServletHolder(new DevModeServlet(this)), "/devmode/*");
-			context.addServlet(new ServletHolder(new LiveViewServlet(cameraService)), "/stream.mjpeg");
+			context.addServlet(new ServletHolder(new LiveViewServlet(cameraService, logger)), "/stream.mjpeg");
 
 			server.setHandler(context);
 		} catch (Exception e) {
