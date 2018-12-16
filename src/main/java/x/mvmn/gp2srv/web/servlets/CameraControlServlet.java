@@ -137,6 +137,8 @@ public class CameraControlServlet extends AbstractGP2Servlet {
 		try {
 			if (requestPath.equals("/") || requestPath.equals("") || requestPath.equals("/index") || requestPath.equals("/index.html")) {
 				serveTempalteUTF8Safely("camera/index.vm", velocityContext, response, logger);
+			} else if ("/photoboothDriver".equals(requestPath)) {
+				serveTempalteUTF8Safely("camera/photoboothDriver.vm", velocityContext, response, logger);
 			} else if ("/camdisconnect".equals(requestPath)) {
 				final CameraProvider camProvider = cameraService.getCameraProvider();
 				if (camProvider.getCamera() != null) {

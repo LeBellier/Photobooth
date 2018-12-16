@@ -53,7 +53,8 @@ public class CameraChoiceFilter extends AbstractGP2Servlet implements Filter {
 							GP2PortInfo gp2PortInfo = portList.getByPath(cameraPortParam);
 							if (gp2PortInfo != null) {
 								camProvider.setCamera(new GP2CameraImpl(gp2PortInfo));
-								httpResponse.sendRedirect("/");
+								httpResponse.sendRedirect(httpRequest.getRequestURI());
+                                
 							} else {
 								httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 							}

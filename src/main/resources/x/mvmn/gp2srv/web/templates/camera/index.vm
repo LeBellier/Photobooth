@@ -11,67 +11,6 @@
 		});
 	}
 	
-	function liveStream2() {
-		getJson("$!{request.contextPath}/cameraConfig.json?reRead=true", function(config) {
-			console.log(config);
-			
-			$("#section_liveStream").html('');
-			var ractive = new Ractive({
-				el: '#section_liveStream',
-				template: '#tplLiveStream',
-				data: {entries: entries, showFavToggle: true, contextPath:"$!{request.contextPath}"}
-			});
-			ractive.on({
-				toggleLiveView: function(event) {
-					$(event.node).parent().find("input").click();
-				},
-				setLiveView: function(event) {
-					if(event.node.checked) {
-						$("#liveViewContainer").show();
-						$("#liveViewContainer").html('<img class="fullWidth" style="width: 100%" src="$!{request.contextPath}/stream.mjpeg?t=' + Date.now() + '" />');
-					} else {
-						$("#liveViewContainer").hide();
-						$("#liveViewContainer img").attr("src", "");
-					}
-				}
-			});
-		}, function(textStatus) { alert('Error loading config: '+textStatus) });
-    }
-	function liveStream() {
-		getJson("$!{request.contextPath}/cameraConfig.json?reRead=true", function(config) {
-			console.log(config);
-			getJson("$!{request.contextPath}/favedConfigs.json?", function(favedConfigs) {
-				console.log(favedConfigs);
-				$("#section_liveStream").html('');
-
-				var entries = [];
-				for(var confPath in config) {
-					var confEntry = config[confPath];
-					
-					entries.push({confEntry: confEntry, faved: favedConfigs[confEntry.path], favInProgress: false, favError: false});
-				}
-				var ractive = new Ractive({
-					el: '#section_liveStream',
-					template: '#tplLiveStream',
-					data: {entries: entries, showFavToggle: true, contextPath:"$!{request.contextPath}"}
-				});
-				ractive.on({
-					toggleLiveView: function(event) {
-						$(event.node).parent().find("input").click();
-					},
-					setLiveView: function(event) {
-						if(event.node.checked) {
-							$("#liveViewContainer").show();
-							$("#liveViewContainer").html('<img class="fullWidth" style="width: 100%" src="$!{request.contextPath}/stream.mjpeg?t=' + Date.now() + '" />');
-						} else {
-							$("#liveViewContainer").hide();
-							$("#liveViewContainer img").attr("src", "");
-						}
-					}
-				});
-			}, function(textStatus) { alert('Error loading faved config elements: '+textStatus) });
-		}, function(textStatus) { alert('Error loading config: '+textStatus) });
-	}
     function reReadConfig() {
 		getJson("$!{request.contextPath}/cameraConfig.json?reRead=true", function(config) {
 			console.log(config);
@@ -230,7 +169,6 @@
 	
 		$(".sitesection").hide();
 		reReadConfig();
-		liveStream();
 		
 		var navRactive = new Ractive({
 			el: '#section_files',
@@ -797,14 +735,12 @@
 	<div class="pageHead">GPhoto2Server</div>
 	<div class="pageSubHead">
 		<div class="navigationContainer">
-			#foreach($navopt in ["liveStream","camera", "files", "scripts"])
+			#foreach($navopt in ["camera", "files", "scripts"])
 				#if($foreach.count>1) | #end
 				<span><a href="#$!navopt" onclick="javascript:nav('$!navopt');return false">$!navopt</a></span>
 			#end
 			| <span><a href="/camdisconnect">x</a></span>
 		</div>
-	</div>
-	<div class="sitesection" id="section_liveStream">
 	</div>
 	<div class="sitesection" id="section_camera">
 	</div>
