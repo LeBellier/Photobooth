@@ -4,13 +4,13 @@
 		$(".sitesection").hide();
 		$("#section_"+elem).show();
 	}
-	
+
 	function restartLiveView() {
 		$("#liveViewContainer img").each(function (idx, el) {
 			el.src='$!{request.contextPath}/stream.mjpeg?t=' + Date.now();
 		});
 	}
-	
+
     function reReadConfig() {
 		getJson("$!{request.contextPath}/cameraConfig.json?reRead=true", function(config) {
 			console.log(config);
@@ -21,7 +21,7 @@
 				var entries = [];
 				for(var confPath in config) {
 					var confEntry = config[confPath];
-					
+
 					entries.push({confEntry: confEntry, faved: favedConfigs[confEntry.path], favInProgress: false, favError: false});
 				}
 				var ractive = new Ractive({
@@ -45,7 +45,7 @@
 							captureButton.disabled = false;
 							restartLiveView();
 						});
-					},				
+					},
 					doCapture: function(event) {
 						var captureButton = event.node;
 						captureButton.disabled = true;
@@ -78,9 +78,9 @@
 						reReadConfig();
 					},
 					handleShowFavOnly: function(event, value) {
-						var boolVal = !!value; 
+						var boolVal = !!value;
 						ractive.set('showOnlyFaved', boolVal);
-						ractive.set('showFavToggle', !boolVal); 
+						ractive.set('showFavToggle', !boolVal);
 					},
 					handleChange: function(event, entryIndex, val) {
 						var ractive = this;
@@ -108,7 +108,7 @@
 						entry.setError = false;
 						entry.setInProgress = true;
 						ractive.update("entries");
-						
+
 						$.ajax({
 							method: "POST",
 							cache: false,
@@ -129,7 +129,7 @@
 							allEntries[entryIndex].confEntry = data;
 							ractive.update("entries");
 							restartLiveView();
-						});							
+						});
 					},
 					handleFav: function(event, entryIndex) {
 						var ractive = this;
@@ -160,16 +160,16 @@
 			}, function(textStatus) { alert('Error loading faved config elements: '+textStatus) });
 		}, function(textStatus) { alert('Error loading config: '+textStatus) });
 	}
-	
+
 	function initUi() {
 		var helpers = Ractive.defaults.data;
 		Ractive.partials.tplConfigSetting = Ractive.parse($('#tplConfigSetting').text());
 		helpers.lowercase = function(str) { return str? str.toLowerCase() : str };
 		helpers.uppercase = function(str) { return str? str.toUpperCase() : str };
-	
+
 		$(".sitesection").hide();
 		reReadConfig();
-		
+
 		var navRactive = new Ractive({
 			el: '#section_files',
 			template: '#tplBrowseSection',
@@ -227,7 +227,7 @@
 				for(var i in selectedFiles) {
 					var selectedFileIndex = selectedFiles[i];
 					var selectedFile = browseData.filesList[selectedFileIndex];
-					selectedFile.previewLink = navRactive.get("contextPath") + "/camfilepreview?thumb=true&folder=" + encodeURIComponent(selectedFile.path) + "&name=" + encodeURIComponent(selectedFile.name);					
+					selectedFile.previewLink = navRactive.get("contextPath") + "/camfilepreview?thumb=true&folder=" + encodeURIComponent(selectedFile.path) + "&name=" + encodeURIComponent(selectedFile.name);
 				}
 				navRactive.set("browseData", browseData);
 			},
@@ -235,9 +235,9 @@
 				$(".fileSelectionCheckbox:checked").each(function(idx, el) {
 					$(el).parent().find(".copyToPcBtn").click();
 					$(el).click();
-				});			
+				});
 			},
-			deleteSelectedFiles: function(event) { 
+			deleteSelectedFiles: function(event) {
 				var browseData = navRactive.get("browseData");
 				var selectedFiles = navRactive.get("selectedFiles");
 				if(!selectedFiles) {
@@ -249,7 +249,7 @@
 					filesToDelete.push(browseData.filesList[selectedFileIndex]);
 				}
 				$("#browseContent .fileSelectionCheckbox").prop("checked", false);
-				
+
 				for(var i in filesToDelete) {
 					var fileToDelete = filesToDelete[i];
 					var delFunc = function(fileToDelete) {
@@ -264,7 +264,7 @@
 								if(browseDataMod.filesList[k].name == fileToDelete.name && browseDataMod.filesList[k].path == fileToDelete.path) {
 									idx = k;
 									break;
-								}  
+								}
 							}
 							if(idx>=0) {
 								browseDataMod.filesList.splice(idx, 1);
@@ -294,7 +294,7 @@
 					loadingIndicator.hide();
 					console.log(jqXHR);
 					alert("Error copying file: "+textStatus);
-				});				
+				});
 			},
 			deleteFile: function(event, path, name) {
 				if(confirm("Delete file "+path.replace(/\/$/g,'')+"/"+name+"?")) {
@@ -316,7 +316,7 @@
 						console.log(jqXHR);
 						alert("Error deleting file: "+textStatus);
 					});
-				}		
+				}
 			}
 		});
 
@@ -325,12 +325,12 @@
 				el: '#section_scripts',
 				template: '#tplScriptingSection',
 				data: {contextPath:"$!{request.contextPath}",
-					scriptFiles:[], 
+					scriptFiles:[],
 					scriptStepTypes:[
 						{key:'CAPTURE', name:'Capture'},
 						{key:'DELAY', name:'Wait'},
 						{key:'CAMEVENT_WAIT', name:'Wait cam'},
-						{key:'CAMPROP_SET', name:'Set prop'}, 
+						{key:'CAMPROP_SET', name:'Set prop'},
 						{key:'VAR_SET', name:'Set var'},
 						{key:'EXEC_SCRIPT', name:'JEXLscript'},
 						{key:'STOP', name:'Stop'},
@@ -352,16 +352,16 @@
 			var saveScript = function(ractive, nameOverride, successCallback, errorCallback) {
 				var scriptName = nameOverride? nameOverride : ractive.get("scriptName");
 				var scriptSteps = ractive.get("scriptSteps");
-	
+
 				var loadingIndicator = $("#scriptEditor .loadingIndicator");
 				var errorIndicator = $("#scriptEditor .errorIndicator");
-	
+
 				loadingIndicator.show();
 				errorIndicator.hide();
 				$("#btnScriptSave").prop("disabled", true);
 				$.ajax({
-					url: "$!{request.contextPath}/scripts/put?name=" + encodeURIComponent(scriptName), 
-					method: 'POST', 
+					url: "$!{request.contextPath}/scripts/put?name=" + encodeURIComponent(scriptName),
+					method: 'POST',
 					contentType: 'application/json',
 					data: JSON.stringify(scriptSteps),
 					dataType: 'json'
@@ -380,13 +380,13 @@
 					$("#btnScriptSave").prop("disabled", false);
 					if(errorCallback) {
 						errorCallback();
-					}					
+					}
 				});
 			};
-	
+
 			var checkSaveRequired = function(ractive, successCallback) {
 				var dirty = ractive.get("isDirty");
-				
+
 				if(dirty) {
 					var scriptName = ractive.get("scriptName");
 					if(confirm("Save current changes to "+scriptName+"?")) {
@@ -398,7 +398,7 @@
 					successCallback();
 				}
 			}
-			
+
 			var loadScriptsStatus = function(type) {
 				$("#scriptStatusLoadingIndicator").show();
 				$("#scriptStatusErrorIndicator").hide();
@@ -412,7 +412,7 @@
 					console.log("Error loading script status: "+textStatus);
 				});
 			};
-			
+
 			function startTraceWebSocket(handler, ractive){
 			    var webSocket = new WebSocket("ws://"+window.location.hostname+":"+window.location.port+"$!{request.contextPath}/scriptws");
 				ractive.set("traceWebSocket", webSocket);
@@ -429,7 +429,7 @@
 			    };
 			}
 
-			
+
 			scriptingRactive.on({
 				setAfterStepDelay: function(event) {
 					var afterStepDelay = prompt("Input after-step delay value in miliseconds", "1000");
@@ -442,10 +442,10 @@
 							data: {value: afterStepDelay}
 						}).done(function(data) {
 							$("#asdLoadingIndicator").hide();
-							$("#asdErrorIndicator").hide();										
+							$("#asdErrorIndicator").hide();
 						}).fail(function(jqXHR, textStatus) {
 							$("#asdLoadingIndicator").hide();
-							$("#asdErrorIndicator").show();				
+							$("#asdErrorIndicator").show();
 							console.log("Error setting script variables dumping: "+textStatus);
 						});
 					}
@@ -456,7 +456,7 @@
 					ws.close();
 					scriptingRactive.set("activeScriptStepIndex", null);
 					$("#btnStartTracing").show();
-					$("#btnStoptTracing").hide();				
+					$("#btnStoptTracing").hide();
 				},
 				startTracing: function(event) {
 					scriptingRactive.set("traceWebSocketDontReconnect", false);
@@ -466,7 +466,7 @@
 							scriptingRactive.set("isDirty", false);
 							$("#btnStartTracing").hide();
 							$("#btnStoptTracing").show();
-						
+
 							startTraceWebSocket(function(event) {
 								var eventData = JSON.parse(event.data);
 								scriptingRactive.set("scriptName", eventData.___scriptName);
@@ -477,7 +477,7 @@
 									scriptingRactive.set("activeScriptStepIndex", null);
 								}
 							}, scriptingRactive);
-						
+
 						}, function(jqXHR, textStatus) {
 							alert("Error loading currently running script steps: "+textStatus);
 						});
@@ -501,33 +501,33 @@
 				},
 				setScriptStopOnError: function(event, val) {
 					$("#stopOnErrorLoadingIndicator").show();
-					$("#stopOnErrorErrorIndicator").hide();				
+					$("#stopOnErrorErrorIndicator").hide();
 					$.ajax({
 						method: 'POST',
 						url: '$!{request.contextPath}/scripts/exec/stoponerror',
 						data: {enable: val}
 					}).done(function(data) {
 						$("#stopOnErrorLoadingIndicator").hide();
-						$("#stopOnErrorErrorIndicator").hide();										
+						$("#stopOnErrorErrorIndicator").hide();
 					}).fail(function(jqXHR, textStatus) {
 						$("#stopOnErrorLoadingIndicator").hide();
-						$("#stopOnErrorErrorIndicator").show();				
+						$("#stopOnErrorErrorIndicator").show();
 						console.log("Error setting script variables dumping: "+textStatus);
 					});
 				},
 				setScriptVarDump: function(event, val) {
 					$("#varDumpLoadingIndicator").show();
-					$("#varDumpErrorIndicator").hide();				
+					$("#varDumpErrorIndicator").hide();
 					$.ajax({
 						method: 'POST',
 						url: '$!{request.contextPath}/scripts/exec/dumpvars',
 						data: {enable: val}
 					}).done(function(data) {
 						$("#varDumpLoadingIndicator").hide();
-						$("#varDumpErrorIndicator").hide();										
+						$("#varDumpErrorIndicator").hide();
 					}).fail(function(jqXHR, textStatus) {
 						$("#varDumpLoadingIndicator").hide();
-						$("#varDumpErrorIndicator").show();				
+						$("#varDumpErrorIndicator").show();
 						console.log("Error setting script variables dumping: "+textStatus);
 					});
 				},
@@ -615,7 +615,7 @@
 				},
 				scriptImport: function() {
 					$("#exportImportFormContents").val("");
-					$("#exportImportForm").show();					
+					$("#exportImportForm").show();
 				},
 				scriptRead: function() {
 					scriptingRactive.set("scriptSteps", JSON.parse($("#exportImportFormContents").val()));
@@ -639,18 +639,18 @@
 						scriptingRactive.set("scriptFiles", scriptsList);
 					}, function(textStatus) {
 						alert('Error loading scripts list: '+textStatus);
-					});				
+					});
 				},
 				loadScript: function(event, scriptName) {
 					checkSaveRequired(scriptingRactive, function() {
 						var loadingIndicator = $("#scriptEditor .loadingIndicator");
 						var errorIndicator = $("#scriptEditor .errorIndicator");
 						loadingIndicator.show();
-						errorIndicator.hide();						
+						errorIndicator.hide();
 						getJson("$!{request.contextPath}/scripts/get?name=" + encodeURIComponent(scriptName), function(scriptSteps) {
 							loadingIndicator.hide();
 							errorIndicator.hide();
-							
+
 							scriptingRactive.set("scriptSteps", scriptSteps);
 							scriptingRactive.set("scriptName", scriptName);
 							scriptingRactive.set("isDirty", false);
@@ -670,8 +670,8 @@
 					loadingIndicator.show();
 					errorIndicator.hide();
 					$.ajax({
-						url: "$!{request.contextPath}/scripts/delete", 
-						method: "POST", 
+						url: "$!{request.contextPath}/scripts/delete",
+						method: "POST",
 						data: {name:scriptName}
 					}).done(function(data) {
 						loadingIndicator.hide();
@@ -686,7 +686,7 @@
 								}
 							}
 						} else {
-							errorIndicator.show();	
+							errorIndicator.show();
 						}
 					}).fail(function(jqXHR, textStatus) {
 						loadingIndicator.hide();
@@ -694,12 +694,12 @@
 					});
 				}
 			});
-		
+
 		}, function(textStatus) {
 			alert("Error loading camera config: "+textStatus);
-		});				
+		});
 	}
-	
+
 	function getJson(url, successCallback, errorCallback) {
 		$.ajax({
 			cache: false,
@@ -711,9 +711,9 @@
 			if(errorCallback) {
 				errorCallback(textStatus);
 			}
-		});	
-	}	
-	
+		});
+	}
+
 	$(document).ready(initUi);
 </script>
 <script type="text/ractive" id="tplConfigSetting">
@@ -721,9 +721,6 @@
 </script>
 <script type="text/ractive" id="tplCameraConfigSettings">
 	#include("camera/configsettingspage.ractive")
-</script>
-<script type="text/ractive" id="tplLiveStream">
-	#include("camera/liveStream.ractive")
 </script>
 <script type="text/ractive" id="tplBrowseSection">
 	#include("camera/browsesection.ractive")

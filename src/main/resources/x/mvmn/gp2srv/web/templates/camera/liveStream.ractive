@@ -1,10 +1,19 @@
 <div class="pageContent scroll">
 	<div class="siteContentElementContainer">
+		<div class="fullWidth">
+			<input type="button" value="capture + download + delete" class="fullWidth" on-click="doCaptureDldDel" /><br/>
+		</div>
 		<div class="fullWidth" style="padding-top: 10px">
-			<input type="checkbox" on-change="setLiveView" />&nbsp;<span class="headline" on-click="toggleLiveView">Live view</span>		
+			<input type="checkbox" on-change="setLiveView" />&nbsp;<span class="headline" on-click="toggleLiveView">Live view</span>
+			{{#each entries:entryIndex}}
+				{{#if confEntry.id == 4}}
+					<div class="inlineBlock halfWidth">
+						<input class="fullWidth {{#if confEntry.intValue == 1}} selectedButton {{/if}}" type="button" value={{confEntry.label}} on-click="@this.fire('handleChange', event, entryIndex, 1)" />
+					</div>
+				{{/if}}
+			{{/each}}
 		</div>
 	</div>
 </div>
 <div id="liveViewContainer" style="display: none">
 </div>
-

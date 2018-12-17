@@ -6,12 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.velocity.context.Context;
-
 import x.mvmn.gp2srv.GPhoto2Server;
 import x.mvmn.gp2srv.camera.CameraProvider;
 import x.mvmn.gp2srv.camera.CameraService;
@@ -68,16 +65,16 @@ public class CameraControlServlet extends AbstractGP2Servlet {
 				switch (CameraConfigEntryType.valueOf(type).getValueType()) {
 					case FLOAT:
 						updatedConfigEntry = configEntry.cloneWithNewValue(Float.parseFloat(value));
-					break;
+						break;
 					case INT:
 						updatedConfigEntry = configEntry.cloneWithNewValue(Integer.parseInt(value));
-					break;
+						break;
 					case STRING:
 						updatedConfigEntry = configEntry.cloneWithNewValue(value);
-					break;
+						break;
 					default:
 						returnForbidden(request, response);
-					break;
+						break;
 				}
 				if (updatedConfigEntry != null) {
 					cameraService.setConfig(updatedConfigEntry);
@@ -137,7 +134,7 @@ public class CameraControlServlet extends AbstractGP2Servlet {
 		try {
 			if (requestPath.equals("/") || requestPath.equals("") || requestPath.equals("/index") || requestPath.equals("/index.html")) {
 				serveTempalteUTF8Safely("camera/index.vm", velocityContext, response, logger);
-			} else if ("/photoboothDriver".equals(requestPath)) {
+			} else if (requestPath.equals("/photoboothDriver")) {
 				serveTempalteUTF8Safely("camera/photoboothDriver.vm", velocityContext, response, logger);
 			} else if ("/camdisconnect".equals(requestPath)) {
 				final CameraProvider camProvider = cameraService.getCameraProvider();
@@ -150,13 +147,13 @@ public class CameraControlServlet extends AbstractGP2Servlet {
 					}
 				}
 				response.sendRedirect("/");
-			} else if ("/cameraConfig.json".equals(requestPath)) {
+			} else if (requestPath.endsWith("/cameraConfig.json")) {
 				final boolean reRead = Boolean.parseBoolean(request.getParameter("reRead"));
 				final Map<String, CameraConfigEntryBean> cameraConfig = getConfigAsMap(!reRead);
 				serveJson(cameraConfig, response);
-			} else if ("/favedConfigs.json".equals(requestPath)) {
+			} else if (requestPath.endsWith("/favedConfigs.json")) {
 				serveJson(favouredCamConfSettings, response);
-			} else if ("/browse.json".equals(requestPath)) {
+			} else if (requestPath.endsWith("/browse.json")) {
 				Map<String, Object> result = new HashMap<String, Object>();
 				String path = request.getParameter("path");
 				if (path == null || path.trim().isEmpty()) {
@@ -177,7 +174,7 @@ public class CameraControlServlet extends AbstractGP2Servlet {
 				Collections.sort(folderList);
 				result.put("folderList", folderList);
 				serveJson(result, response);
-			} else if ("/camfilepreview".equals(requestPath)) {
+			} else if (requestPath.endsWith("/camfilepreview")) {
 				final String fileName = request.getParameter("name");
 				final String filePath = request.getParameter("folder");
 				final boolean thumb = Boolean.valueOf(request.getParameter("thumb"));
