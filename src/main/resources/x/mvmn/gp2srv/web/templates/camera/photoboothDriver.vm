@@ -12,15 +12,18 @@
 			$("#section_camera").html('');
 
 			var entries = [];
+			var theAutoFocus = 0
 			for(var confPath in config) {
 				var confEntry = config[confPath];
-
+				if (confEntry.id == 4){
+					theAutoFocus = confEntry;
+				}
 				entries.push({confEntry: confEntry, favInProgress: false, favError: false});
 			}
 			var ractive = new Ractive({
 				el: '#section_camera',
 				template: '#tplLiveStream',
-				data: {entries: entries, showFavToggle: true, contextPath:"$!{request.contextPath}"}
+				data: {theAutoFocus: theAutoFocus, showFavToggle: true, contextPath:"$!{request.contextPath}"}
 			});
 			ractive.on({
 				toggleLiveView: function(event) {
@@ -29,7 +32,7 @@
 				setLiveView: function(event) {
 					if(event.node.checked) {
 						$("#liveViewContainer").show();
-						$("#liveViewContainer").html('<img class="fullWidth" style="width: 100%" src="$!{request.contextPath}/stream.mjpeg?t=' + Date.now() + '" />');
+						$("#liveViewContainer").html('<img class="twoThiredWidth" src="$!{request.contextPath}/stream.mjpeg?t=' + Date.now() + '" />');
 					} else {
 						$("#liveViewContainer").hide();
 						$("#liveViewContainer img").attr("src", "");
@@ -90,7 +93,6 @@
 
 	function initUi() {
 		var helpers = Ractive.defaults.data;
-		Ractive.partials.tplConfigSetting_1 = Ractive.parse($('#tplConfigSetting_1').text());
 		helpers.lowercase = function(str) { return str? str.toLowerCase() : str };
 		helpers.uppercase = function(str) { return str? str.toUpperCase() : str };
 
@@ -111,9 +113,6 @@
 		});
 	}
 	$(document).ready(initUi);
-</script>
-<script type="text/ractive" id="tplConfigSetting_1">
-	#include("camera/configsetting_1.ractive")
 </script>
 <script type="text/ractive" id="tplLiveStream">
 	#include("camera/liveStream.ractive")

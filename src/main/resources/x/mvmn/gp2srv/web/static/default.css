@@ -66,6 +66,10 @@ body {
 	width: 50%;
 }
 
+.twoThiredWidth {
+	width: 80%;
+}
+
 .scroll {
 	overflow: auto;
 	white-space: nowrap;
@@ -93,7 +97,7 @@ body {
 	background-color: white;
 	color: black;
 	padding: 0pt;
-	font-size: 14pt;	
+	font-size: 14pt;
 }
 
 .errorPage .pageHead {
@@ -107,7 +111,7 @@ body {
 
 .actionLink {
 	font-size: 14pt;
-	line-height: 30pt;	
+	line-height: 30pt;
 }
 
 .headline, .navigationContainer a {
