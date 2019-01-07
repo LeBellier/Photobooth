@@ -5,12 +5,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
-
 import org.apache.commons.jexl3.JexlEngine;
 import org.junit.Assert;
 import org.junit.Test;
 import org.mockito.Mockito;
-
 import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.gp2srv.scripting.model.ScriptExecution.ScriptExecutionFinishListener;
 import x.mvmn.gp2srv.scripting.model.ScriptStep.ScriptStepType;

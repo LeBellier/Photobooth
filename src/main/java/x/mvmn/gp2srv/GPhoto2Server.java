@@ -42,7 +42,7 @@ import x.mvmn.log.api.Logger;
 import x.mvmn.log.api.Logger.LogLevel;
 import x.mvmn.util.FileBackedProperties;
 
-public class GPhoto2Server implements Provider<TemplateEngine>, CameraProvider {
+public class GPhoto2Server implements Provider<TemplateEngine> {
 
 	private static final String DEFAULT_CONTEXT_PATH = "/";
 	private static final int DEFAULT_PORT = 8080;
@@ -54,7 +54,7 @@ public class GPhoto2Server implements Provider<TemplateEngine>, CameraProvider {
 	private volatile GP2Camera camera;
 	private final File userHome;
 	private final File appHomeFolder;
-	// private final File imagesFolder;
+	private final File imagesFolder;
 	private final File scriptsFolder;
 	private final File favouredCamConfSettingsFile;
 	private final FileBackedProperties favouredCamConfSettings;
@@ -65,50 +65,45 @@ public class GPhoto2Server implements Provider<TemplateEngine>, CameraProvider {
 	public static final AtomicBoolean liveViewEnabled = new AtomicBoolean(true);
 	public static final AtomicBoolean liveViewInProgress = new AtomicBoolean(false);
 
-	public GPhoto2Server(final LogLevel logLevel, final boolean mockMode) {
-		this(DEFAULT_CONTEXT_PATH, DEFAULT_PORT, logLevel, mockMode);
+	public GPhoto2Server(final Logger a_logger, CameraService cameraService, File imagesFolder) {
+		this(a_logger, cameraService, imagesFolder, DEFAULT_PORT, DEFAULT_CONTEXT_PATH);
 	}
 
-	public GPhoto2Server(final LogLevel logLevel) {
-		this(DEFAULT_CONTEXT_PATH, DEFAULT_PORT, logLevel, false);
+	public GPhoto2Server(final Logger a_logger, CameraService cameraService, File imagesFolder, Integer port) {
+		this(a_logger, cameraService, imagesFolder, port, DEFAULT_CONTEXT_PATH);
 	}
 
-	public GPhoto2Server(Integer port, final LogLevel logLevel, final boolean mockMode) {
-		this(DEFAULT_CONTEXT_PATH, port, logLevel, mockMode);
+	public GPhoto2Server(final Logger a_logger, CameraService cameraService, File imagesFolder, Integer port,
+			String contextPath) {
+		this(a_logger, cameraService, imagesFolder, port, null, contextPath);
 	}
 
-	public GPhoto2Server(Integer port, final LogLevel logLevel) {
-		this(DEFAULT_CONTEXT_PATH, port, logLevel, false);
+	public GPhoto2Server(final Logger a_logger, CameraService cameraService, File imagesFolder, Integer port,
+			String[] requireAuthCredentials) {
+		this(a_logger, cameraService, imagesFolder, port, requireAuthCredentials, DEFAULT_CONTEXT_PATH);
 	}
 
-	public GPhoto2Server(String contextPath, Integer port, final LogLevel logLevel, final boolean mockMode) {
-		this(contextPath, port, logLevel, mockMode, null, null);
-	}
-
-	public GPhoto2Server(Integer port, final LogLevel logLevel, final boolean mockMode, final String[] requireAuthCredentials, String imageDldPath) {
-		this(DEFAULT_CONTEXT_PATH, port, logLevel, mockMode, requireAuthCredentials, imageDldPath);
-	}
-
-	public GPhoto2Server(String contextPath, Integer port, final LogLevel logLevel, final boolean mockMode, final String[] requireAuthCredentials,
-			String imageDldPath) {
-		this.logger = makeLogger(logLevel);
-		logger.info("Initializing...");
-
+	public GPhoto2Server(final Logger a_logger, CameraService a_cameraService, File a_imagesFolder, Integer port,
+			String[] requireAuthCredentials, String contextPath) {
 		try {
+			if (a_logger == null || a_cameraService == null || a_imagesFolder == null)
+				throw new RuntimeException("An argument is missing in the GPhoto2Server constructor");
+
+			this.logger = a_logger;
+			logger.info("Initializing...");
+
 			if (contextPath == null) {
 				contextPath = DEFAULT_CONTEXT_PATH;
 			}
 			if (port == null) {
 				port = DEFAULT_PORT;
 			}
-			logger.debug("Arguments are : " + port.toString() + ", "
-					+ logLevel.toString() + ", "
-					+ mockMode + ", "
-					+ requireAuthCredentials + ", "
-					+ imageDldPath);
+			logger.info("Arguments are : " + port.toString() + ", " + logger.getLevel().toString() + ", "
+					+ requireAuthCredentials + ", " + a_imagesFolder.getAbsolutePath());
 
 			this.templateEngine = makeTemplateEngine();
 			this.velocityContextService = new VelocityContextService();
+			this.imagesFolder = a_imagesFolder;
 
 			this.server = new Server(port);
 			this.server.setStopAtShutdown(true);
@@ -118,19 +113,13 @@ public class GPhoto2Server implements Provider<TemplateEngine>, CameraProvider {
 			userHome = new File(System.getProperty("user.home"));
 			appHomeFolder = new File(userHome, ".gp2srv");
 			appHomeFolder.mkdir();
-			if (imageDldPath == null || imageDldPath.trim().isEmpty()) {
-				imageDldPath = new File(userHome, "gp2srv_images").getAbsolutePath();
-			}
-			File imageDldFolder = new File(imageDldPath);
-			logger.info("Images download folder: " + imageDldFolder.getCanonicalPath());
-			if (!imageDldFolder.exists()) {
-				imageDldFolder.mkdirs();
-			} else if (!imageDldFolder.isDirectory()) {
-				throw new RuntimeException("Not a directory: " + imageDldFolder);
-			}
 
-			// imagesFolder = new File(appHomeFolder, "img");
-			// imagesFolder.mkdirs();
+			logger.info("Images download folder: " + imagesFolder.getCanonicalPath());
+			if (!imagesFolder.exists()) {
+				imagesFolder.mkdirs();
+			} else if (!imagesFolder.isDirectory()) {
+				throw new RuntimeException("Not a directory: " + imagesFolder);
+			}
 			scriptsFolder = new File(appHomeFolder, "scripts");
 			scriptsFolder.mkdirs();
 			favouredCamConfSettingsFile = new File(appHomeFolder, "favouredConfs.properties");
@@ -141,27 +130,31 @@ public class GPhoto2Server implements Provider<TemplateEngine>, CameraProvider {
 			velocityContextService.getGlobalContext().put("favouredCamConfSettings", favouredCamConfSettings);
 
 			context.setErrorHandler(new ErrorHandler() {
-				private final AbstractErrorHandlingServlet eh = new AbstractErrorHandlingServlet(GPhoto2Server.this, GPhoto2Server.this.getLogger()) {
+				private final AbstractErrorHandlingServlet eh = new AbstractErrorHandlingServlet(GPhoto2Server.this,
+						GPhoto2Server.this.getLogger()) {
 					private static final long serialVersionUID = -30520483617261093L;
 				};
 
 				@Override
-				protected void handleErrorPage(final HttpServletRequest request, final Writer writer, final int code, final String message) {
+				protected void handleErrorPage(final HttpServletRequest request, final Writer writer, final int code,
+						final String message) {
 					eh.serveGenericErrorPage(request, writer, code, message);
 				}
 			});
 
-			if (requireAuthCredentials != null && requireAuthCredentials.length > 1 && requireAuthCredentials[0] != null && requireAuthCredentials[1] != null
-					&& !requireAuthCredentials[0].trim().isEmpty() && !requireAuthCredentials[1].trim().isEmpty()) {
-				context.addFilter(new FilterHolder(new BasicAuthFilter(requireAuthCredentials[0], requireAuthCredentials[1])), "/*",
-						EnumSet.of(DispatcherType.REQUEST));
+			if (requireAuthCredentials != null && requireAuthCredentials.length > 1 && requireAuthCredentials[0] != null
+					&& requireAuthCredentials[1] != null && !requireAuthCredentials[0].trim().isEmpty()
+					&& !requireAuthCredentials[1].trim().isEmpty()) {
+				context.addFilter(
+						new FilterHolder(new BasicAuthFilter(requireAuthCredentials[0], requireAuthCredentials[1])),
+						"/*", EnumSet.of(DispatcherType.REQUEST));
 			}
 			context.addFilter(new FilterHolder(new RootAuthFilter("pi", "bbr")), "/",
 					EnumSet.of(DispatcherType.REQUEST));
-			final CameraService cameraService = mockMode ? new MockCameraServiceImpl() : new CameraServiceImpl(this);
-			final CameraProvider camProvider = cameraService.getCameraProvider();
+			final CameraProvider camProvider = a_cameraService.getCameraProvider();
 
-			context.addFilter(new FilterHolder(new CameraChoiceFilter(camProvider, velocityContextService, this, logger)), "/*",
+			context.addFilter(
+					new FilterHolder(new CameraChoiceFilter(camProvider, velocityContextService, this, logger)), "/*",
 					EnumSet.of(DispatcherType.REQUEST));
 
 			AtomicBoolean scriptDumpVars = new AtomicBoolean(true);
@@ -169,17 +162,20 @@ public class GPhoto2Server implements Provider<TemplateEngine>, CameraProvider {
 			scriptExecService = new ScriptExecutionServiceImpl(logger);
 			scriptExecWebSocketNotifier = new ScriptExecWebSocketNotifier(logger, scriptDumpVars);
 
-			context.addServlet(new ServletHolder(new ScriptExecutionReportingWebSocketServlet(scriptExecService, logger)), "/scriptws");
-			context.addServlet(new ServletHolder(new ScriptingServlet(cameraService, scriptManagementService, scriptExecService, scriptExecWebSocketNotifier,
-					scriptDumpVars, velocityContextService, this, imageDldFolder, logger)), "/scripts/*");
-
-			// context.addServlet(new ServletHolder(new ImagesServlet(this, imagesFolder, logger)), "/img/*");
-			context.addServlet(new ServletHolder(new StaticsResourcesServlet(this, logger)), "/static/*");
 			context.addServlet(
-					new ServletHolder(new CameraControlServlet(cameraService, favouredCamConfSettings, velocityContextService, this, imageDldFolder, logger)),
-					"/");
+					new ServletHolder(new ScriptExecutionReportingWebSocketServlet(scriptExecService, logger)),
+					"/scriptws");
+			context.addServlet(new ServletHolder(new ScriptingServlet(a_cameraService, scriptManagementService,
+					scriptExecService, scriptExecWebSocketNotifier, scriptDumpVars, velocityContextService, this,
+					imagesFolder, logger)), "/scripts/*");
+
+			// context.addServlet(new ServletHolder(new ImagesServlet(this, imagesFolder,
+			// logger)), "/img/*");
+			context.addServlet(new ServletHolder(new StaticsResourcesServlet(this, logger)), "/static/*");
+			context.addServlet(new ServletHolder(new CameraControlServlet(a_cameraService, favouredCamConfSettings,
+					velocityContextService, this, imagesFolder, logger)), "/");
 			context.addServlet(new ServletHolder(new DevModeServlet(this)), "/devmode/*");
-			context.addServlet(new ServletHolder(new LiveViewServlet(cameraService, logger)), "/stream.mjpeg");
+			context.addServlet(new ServletHolder(new LiveViewServlet(a_cameraService, logger)), "/stream.mjpeg");
 
 			server.setHandler(context);
 		} catch (Exception e) {
@@ -204,11 +200,16 @@ public class GPhoto2Server implements Provider<TemplateEngine>, CameraProvider {
 		return this.logger;
 	}
 
+	public File getImagesFolder() {
+		return this.imagesFolder;
+	}
+
 	protected TemplateEngine makeTemplateEngine() throws IOException {
 		final Map<String, String> templatesRegistrations = new HashMap<String, String>();
 		{
 			final Properties templatesListProps = new Properties();
-			templatesListProps.load(GPhoto2Server.class.getResourceAsStream(TemplateEngine.DEFAULT_TEMPLATES_CLASSPATH_PREFIX + "templates_list.properties"));
+			templatesListProps.load(GPhoto2Server.class.getResourceAsStream(
+					TemplateEngine.DEFAULT_TEMPLATES_CLASSPATH_PREFIX + "templates_list.properties"));
 			for (Object templateNameObj : templatesListProps.keySet()) {
 				String key = templateNameObj.toString();
 				templatesRegistrations.put(key, templatesListProps.getProperty(key));

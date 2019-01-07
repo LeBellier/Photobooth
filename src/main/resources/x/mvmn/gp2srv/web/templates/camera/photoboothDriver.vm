@@ -26,6 +26,22 @@
 				data: {theAutoFocus: theAutoFocus, showFavToggle: true, contextPath:"$!{request.contextPath}"}
 			});
 			ractive.on({
+				doCaptureDldDel: function(event) {
+					var captureButton = event.node;
+					captureButton.disabled = true;
+					$.ajax({
+						url: '$!{request.contextPath}/capture_dld_del',
+						method: 'POST'
+					}).fail(function(jqXHR, textStatus) {
+						captureButton.disabled = false;
+						console.log(jqXHR);
+						alert("Error occurred: "+textStatus);
+						restartLiveView();
+					}).done(function() {
+						captureButton.disabled = false;
+						restartLiveView();
+					});
+				},
 				toggleLiveView: function(event) {
 					$(event.node).parent().find("input").click();
 				},
