@@ -1,10 +1,8 @@
 package x.leBellier.photobooth;
 
 import java.io.File;
-import java.io.IOException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
-import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import x.mvmn.gp2srv.GPhoto2Server;
 import x.mvmn.gp2srv.camera.CameraProvider;
@@ -16,7 +14,7 @@ import x.mvmn.log.PrintStreamLogger;
 import x.mvmn.log.api.Logger;
 import x.mvmn.log.api.Logger.LogLevel;
 
-public class Snippet implements CameraProvider {
+public final class Snippet implements CameraProvider {
 
 	private volatile GP2Camera camera;
 
@@ -26,21 +24,19 @@ public class Snippet implements CameraProvider {
 
 	public Snippet(String[] args) {
 		LauncherBean bean = parseCmdArgs(args);
-		runScriptPhotobooth(bean.logger, bean.cameraService, bean.imagesFolder);
-
 		try {
+			runScriptPhotobooth(bean.logger, bean.cameraService, bean.imagesFolder);
+
 			GPhoto2Server server = new GPhoto2Server(bean.logger, bean.cameraService, bean.imagesFolder, bean.port, bean.auth);
 			server.start().join();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			bean.logger.error(e);
 		}
-		runScriptPhotobooth(bean.logger, bean.cameraService, bean.imagesFolder);
 	}
 
 	private void runScriptPhotobooth(final Logger a_logger, final CameraService a_cameraService, File a_imagesFolder) {
 		PhotoboothGpio photoboothGpio = new PhotoboothGpio(a_logger, a_cameraService, a_imagesFolder);
-		photoboothGpio.run();
+		photoboothGpio.start();
 	}
 
 	protected Logger makeLogger(final LogLevel logLevel) {
@@ -130,11 +126,7 @@ public class Snippet implements CameraProvider {
 			bean.port = port;
 			return bean;
 
-		} catch (ParseException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-			return new LauncherBean();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return new LauncherBean();
