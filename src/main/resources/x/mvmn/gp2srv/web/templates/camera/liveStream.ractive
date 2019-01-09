@@ -1,15 +1,15 @@
-<div class="pageContent scroll">
-	<div class="siteContentElementContainer">
-		<div class="fullWidth">
-			<input type="button" value="capture + download + delete" class="fullWidth" on-click="doCaptureDldDel" /><br/>
-		</div>
-		<div class="fullWidth" style="padding-top: 10px">
-			<input type="checkbox" on-change="setLiveView" />&nbsp;<span class="headline" on-click="toggleLiveView">Live view</span>
-			<div class="inlineBlock halfWidth">
-				<input class="fullWidth {{#if theAutoFocus.intValue == 1}} selectedButton {{/if}}" type="button" value={{theAutoFocus.label}} on-click="@this.fire('handleChange', event, 4, 1)" />
-			</div>
-		</div>
-	</div>
-</div>
-<div id="liveViewContainer" style="display: none">
-</div>
+	<table class="fullWidth">
+		<tr>
+			<td class="twoThiredWidth">
+				<div id="liveViewContainer" style="display: none">
+				</div>
+			</td>
+			<td valign="Top">
+				<div>
+					<input type="checkbox" on-change="setLiveView" />&nbsp;<span class="headline" on-click="toggleLiveView">Live view</span>
+					<input type="button" value="capture + download + delete" class="fullWidth" on-click="doCaptureDldDel" />
+					<input class="fullWidth {{#if theAutoFocus.intValue == 1}} selectedButton {{/if}}" type="button" value={{theAutoFocus.label}} on-click="@this.fire('handleChange', event, 4, 1)" />
+				</div>
+			</td>
+		</tr>
+	</table>

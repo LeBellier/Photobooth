@@ -17,8 +17,6 @@ import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
 import x.mvmn.gp2srv.camera.CameraProvider;
 import x.mvmn.gp2srv.camera.CameraService;
-import x.mvmn.gp2srv.camera.service.impl.CameraServiceImpl;
-import x.mvmn.gp2srv.mock.service.impl.MockCameraServiceImpl;
 import x.mvmn.gp2srv.scripting.service.impl.ScriptExecutionServiceImpl;
 import x.mvmn.gp2srv.scripting.service.impl.ScriptsManagementServiceImpl;
 import x.mvmn.gp2srv.web.service.velocity.TemplateEngine;
@@ -86,8 +84,9 @@ public class GPhoto2Server implements Provider<TemplateEngine> {
 	public GPhoto2Server(final Logger a_logger, CameraService a_cameraService, File a_imagesFolder, Integer port,
 			String[] requireAuthCredentials, String contextPath) {
 		try {
-			if (a_logger == null || a_cameraService == null || a_imagesFolder == null)
+			if (a_logger == null || a_cameraService == null || a_imagesFolder == null) {
 				throw new RuntimeException("An argument is missing in the GPhoto2Server constructor");
+			}
 
 			this.logger = a_logger;
 			logger.info("Initializing...");

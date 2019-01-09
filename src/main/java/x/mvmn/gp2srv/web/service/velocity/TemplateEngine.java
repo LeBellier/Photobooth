@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.io.Writer;
 import java.util.Map;
 import java.util.Properties;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.velocity.app.VelocityEngine;
 import org.apache.velocity.context.Context;
@@ -14,7 +13,6 @@ import org.apache.velocity.runtime.log.SystemLogChute;
 import org.apache.velocity.runtime.resource.loader.StringResourceLoader;
 import org.apache.velocity.runtime.resource.util.StringResourceRepository;
 import org.apache.velocity.runtime.resource.util.StringResourceRepositoryImpl;
-
 import x.mvmn.gp2srv.GPhoto2Server;
 import x.mvmn.lang.util.DateHelper;
 
@@ -27,7 +25,7 @@ public class TemplateEngine {
 
 	protected static class StaticToolsHelper {
 
-		private static final Class<?> TOOLS[] = new Class<?>[] { DateHelper.class };
+		private static final Class<?> TOOLS[] = new Class<?>[]{DateHelper.class};
 
 		public static void populateTools(final Context context) {
 			for (final Class<?> toolClass : TOOLS) {

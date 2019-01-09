@@ -67,8 +67,9 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 	@Override
 	public void run() {
 		// keep program running until user aborts (CTRL-C)
-		while (true) {
-			try {
+		try {
+			while (true) {
+
 				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 				buttonLed.setState(false);
 				logger.debug("Press enter to snap :p");
@@ -77,19 +78,15 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 
 				Thread.sleep(8500);
 
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-				logger.error(e.getMessage());
-			} catch (IOException ex) {
-				java.util.logging.Logger.getLogger(PhotoboothGpio.class.getName()).log(Level.SEVERE, null, ex);
 			}
-		}
+		} catch (InterruptedException e) {
+			logger.error(e.getMessage());
+		} catch (IOException ex) {
+			logger.error(ex.getMessage());
 
-		// stop all GPIO activity/threads by shutting down the GPIO controller
-		// (this method will forcefully shutdown all GPIO monitoring threads and
-		// scheduled tasks)
-		// gpio.shutdown(); <--- implement this method call if you wish to terminate the
-		// Pi4J GPIO controller
+		} finally {
+			gpio.shutdown();
+		}
 	}
 
 	public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {

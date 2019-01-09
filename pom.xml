@@ -12,17 +12,6 @@
 		<jetty-version>9.3.12.v20160915</jetty-version>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>oss-snapshots-repo</id>
-			<name>Sonatype OSS Maven Repository</name>
-			<url>https://oss.sonatype.org/content/groups/public</url>
-			<snapshots>
-				<enabled>true</enabled>
-				<updatePolicy>always</updatePolicy>
-			</snapshots>
-		</repository>
-	</repositories>
 	<dependencies>
 		<dependency>
 			<groupId>net.java.dev.jna</groupId>
@@ -99,7 +88,6 @@
 		<dependency>
 			<groupId>com.pi4j</groupId>
 			<artifactId>pi4j-core</artifactId>
-			<!--version>1.2-20180423.162750-37</version-->
 			<version>1.2-SNAPSHOT</version>
 		</dependency>
 		<dependency>
@@ -214,7 +202,7 @@
 									java&#032;-jar&#032;GPhoto2Server-${project.version}.jar
 								</echo>
 								<echo>ANT TASK - copying files....</echo>
-								<copy todir="${basedir}/distribution/" overwrite="true" flatten="true">
+								<!--copy todir="${basedir}/distribution/" overwrite="true" flatten="true">
 									<fileset dir="${project.build.directory}" >
 										<include name="*.bat" />
 										<include name="*.sh" />
@@ -225,17 +213,17 @@
 									<fileset dir="${project.build.directory}" includes="lib/*.jar" ></fileset>
 									<fileset dir="${basedir}" includes="lib/*.jar" ></fileset>
 								</copy>
+								<copy todir="A:\gp2srv\lib" overwrite="true" flatten="true">
+									<fileset dir="${project.build.directory}" includes="lib/*.jar" >
+									</fileset>
+									<fileset dir="${basedir}" includes="lib/*.jar" >
+									</fileset>
+								</copy-->
 								<copy todir="A:\gp2srv" overwrite="true" flatten="true">
 									<fileset dir="${project.build.directory}">
 										<include name="*.bat" />
 										<include name="*.sh" />
 										<include name="*.jar" />
-									</fileset>
-								</copy>
-								<copy todir="A:\gp2srv\lib" overwrite="true" flatten="true">
-									<fileset dir="${project.build.directory}" includes="lib/*.jar" >
-									</fileset>
-									<fileset dir="${basedir}" includes="lib/*.jar" >
 									</fileset>
 								</copy>
 							</tasks>

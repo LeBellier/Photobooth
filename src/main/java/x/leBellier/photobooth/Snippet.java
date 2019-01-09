@@ -31,12 +31,15 @@ public final class Snippet implements CameraProvider {
 			server.start().join();
 		} catch (Exception e) {
 			bean.logger.error(e);
+		} finally {
 		}
 	}
 
-	private void runScriptPhotobooth(final Logger a_logger, final CameraService a_cameraService, File a_imagesFolder) {
+	private PhotoboothGpio runScriptPhotobooth(final Logger a_logger, final CameraService a_cameraService, File a_imagesFolder) {
 		PhotoboothGpio photoboothGpio = new PhotoboothGpio(a_logger, a_cameraService, a_imagesFolder);
 		photoboothGpio.start();
+
+		return photoboothGpio;
 	}
 
 	protected Logger makeLogger(final LogLevel logLevel) {

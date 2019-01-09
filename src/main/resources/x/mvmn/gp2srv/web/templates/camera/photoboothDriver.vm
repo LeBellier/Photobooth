@@ -48,7 +48,7 @@
 				setLiveView: function(event) {
 					if(event.node.checked) {
 						$("#liveViewContainer").show();
-						$("#liveViewContainer").html('<img class="twoThiredWidth" src="$!{request.contextPath}/stream.mjpeg?t=' + Date.now() + '" />');
+						$("#liveViewContainer").html('<img class="fullWidth" src="$!{request.contextPath}/stream.mjpeg?t=' + Date.now() + '" />');
 					} else {
 						$("#liveViewContainer").hide();
 						$("#liveViewContainer img").attr("src", "");
@@ -133,9 +133,6 @@
 <script type="text/ractive" id="tplLiveStream">
 	#include("camera/liveStream.ractive")
 </script>
-<div class="fullWidth">
-	<div class="pageHead">GPhoto2Server</div>
-	<div class="sitesection" id="section_camera">
-	</div>
+<div class="fullWidth" id="section_camera">
 </div>
 #parse("camera/foot.vm")
