@@ -3,13 +3,13 @@ package x.mvmn.gp2srv.camera;
 import java.io.File;
 import java.util.List;
 import java.util.Map;
-
 import x.mvmn.jlibgphoto2.api.CameraConfigEntryBean;
 import x.mvmn.jlibgphoto2.api.CameraFileSystemEntryBean;
 import x.mvmn.jlibgphoto2.api.GP2Camera.GP2CameraCaptureType;
 import x.mvmn.jlibgphoto2.api.GP2Camera.GP2CameraEventType;
 
 public interface CameraService {
+
 	public void close();
 
 	public byte[] capturePreview();
@@ -41,6 +41,8 @@ public interface CameraService {
 	public byte[] fileGetThumb(final String filePath, final String fileName);
 
 	public String downloadFile(final String cameraFilePath, final String cameraFileName, final File downloadFolder);
+
+	public String downloadFile(final String cameraFilePath, final String cameraFileName, final File downloadFolder, final String downloadFileName);
 
 	public CameraProvider getCameraProvider();
 }

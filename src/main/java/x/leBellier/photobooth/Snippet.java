@@ -83,7 +83,6 @@ public final class Snippet implements CameraProvider {
 			}
 
 			File imagesFolder = null;
-//			if (commandLine.hasOption("imgfolder")) {
 			File userHome = new File(System.getProperty("user.home"));
 
 			String imageDldPath = commandLine.getOptionValue("imgfolder");
@@ -97,7 +96,6 @@ public final class Snippet implements CameraProvider {
 			} else if (!imagesFolder.isDirectory()) {
 				throw new RuntimeException("Not a directory: " + imagesFolder);
 			}
-			//}
 
 			Integer port = null;
 			if (commandLine.hasOption("port")) {

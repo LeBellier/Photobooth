@@ -5,9 +5,7 @@ import java.io.File;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
-
 import org.apache.commons.io.FileUtils;
-
 import x.mvmn.gp2srv.camera.CameraProvider;
 import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.jlibgphoto2.api.CameraConfigEntryBean;
@@ -84,6 +82,32 @@ public class CameraServiceImpl implements CameraService, Closeable {
 		File targetFile = new File(downloadFolder, cameraFileName);
 		long i = 0;
 		while (targetFile.exists()) {
+			System.out.println(targetFile.getAbsolutePath());
+
+			int dotIndex = cameraFileName.lastIndexOf(".");
+			if (dotIndex > 0) {
+				targetFile = new File(downloadFolder, cameraFileName.substring(0, dotIndex) + "_" + (i++) + "." + cameraFileName.substring(dotIndex + 1));
+			} else {
+				targetFile = new File(downloadFolder, cameraFileName + (i++));
+			}
+		}
+		try {
+			FileUtils.writeByteArrayToFile(targetFile, content);
+			result = "Ok";
+		} catch (Exception e) {
+			result = "Error: " + e.getClass().getName() + " " + e.getMessage();
+		}
+		return result.trim();
+	}
+
+	public String downloadFile(final String cameraFilePath, final String cameraFileName, final File downloadFolder, final String downloadFileName) {
+		String result = null;
+		byte[] content = fileGetContents(cameraFilePath, cameraFileName);
+		File targetFile = new File(downloadFolder, downloadFileName);
+		long i = 0;
+		while (targetFile.exists()) {
+			System.out.println(targetFile.getAbsolutePath());
+
 			int dotIndex = cameraFileName.lastIndexOf(".");
 			if (dotIndex > 0) {
 				targetFile = new File(downloadFolder, cameraFileName.substring(0, dotIndex) + "_" + (i++) + "." + cameraFileName.substring(dotIndex + 1));

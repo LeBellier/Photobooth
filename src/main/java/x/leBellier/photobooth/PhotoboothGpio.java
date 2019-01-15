@@ -18,9 +18,9 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
 import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.jlibgphoto2.api.CameraFileSystemEntryBean;
+import x.mvmn.jlibgphoto2.exception.GP2CameraBusyException;
 import x.mvmn.log.api.Logger;
 
 /**
@@ -108,25 +108,23 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 				logger.debug("pose!");
 				buttonLed.setState(true);
 				snippedLed.setState(false);
-				Thread.sleep(1500 * coefDebug);
+				Thread.sleep(150 * coefDebug);
 
 				int blinking = 1000;
-				blinkRampe(blinking, 15000 * coefDebug, snippedLed, PinState.LOW);
+				blinkRampe(blinking, 1000 * coefDebug, snippedLed, PinState.LOW);
 
 				snippedLed.setState(false);
 				logger.debug("SNAP !!!!");
 
 				// take photo and save with gphoto2
 				Date date = new Date();
-				logger.debug(sdf.format(date));
-				String output = String.format("%s/photobooth%s.jpg", imageDldFolder, sdf.format(date));
-				//captureDownload(output);
+				String output = String.format("photobooth%s.jpg", sdf.format(date));
+				captureDownload(output);
 				snippedLed.setState(true);
 
 				// if sucess
 				snap += 1;
 				photoFilenames.add(output);
-				// photo_files += ((photo_file,PHOTO_MIMETYPE),)
 			}
 
 			// Google Drive uploading #drive = gdrive.authorize_gdrive_api()
@@ -136,18 +134,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 				logger.debug("please wait while your photos print...");
 				printLed.setState(false);
 
-				// build image and send to printer
-				ProcessBuilder pb = new ProcessBuilder("/home/pi/scripts/photobooth/assemble_and_print"); // TODO:
-				// sudo
-				// is
-				// needed
-				// ?
-				Process p = pb.start();
-				BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
-				String line = null;
-				while ((line = reader.readLine()) != null) {
-					logger.debug(line);
-				}
+				ImageUtils.append4(imageDldFolder, photoFilenames, sdf.format(new Date()));
 
 				// TODO: implement a reboot button
 				// Wait to ensure that print queue doesn't pile up
@@ -160,20 +147,27 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			logger.error(e.getMessage());
-		} catch (IOException ex) {
-			java.util.logging.Logger.getLogger(PhotoboothGpio.class.getName()).log(Level.SEVERE, null, ex);
 		} finally {
 			isScriptRunning = false;
 		}
 	}
 
-	void captureDownload(String dstFilename) {
-		CameraFileSystemEntryBean cfseb = cameraService.capture();
-		cameraService.downloadFile(cfseb.getPath(), cfseb.getName(), imageDldFolder);
-		cameraService.fileDelete(cfseb.getPath(), cfseb.getName());
+	private void captureDownload(String dstFilename) {
+		int photoFail = 0;
+		while (photoFail < 5) {
+			try {
+				CameraFileSystemEntryBean cfseb = cameraService.capture();
+				cameraService.downloadFile(cfseb.getPath(), cfseb.getName(), imageDldFolder, dstFilename);
+				cameraService.fileDelete(cfseb.getPath(), cfseb.getName());
+				break;
+			} catch (GP2CameraBusyException e) {
+				photoFail++;
+			}
+		}
+
 	}
 
-	void blink(long delay, long duration, GpioPinDigitalOutput led, PinState blinkState) throws InterruptedException {
+	private void blink(long delay, long duration, GpioPinDigitalOutput led, PinState blinkState) throws InterruptedException {
 		long fin = System.currentTimeMillis() + duration;
 		led.setState(blinkState);
 		while (System.currentTimeMillis() < fin) {
@@ -183,7 +177,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		led.setState(blinkState.isLow());
 	}
 
-	void blinkRampe(long delayMax, long durationTotal, GpioPinDigitalOutput led, PinState blinkState) throws InterruptedException {
+	private void blinkRampe(long delayMax, long durationTotal, GpioPinDigitalOutput led, PinState blinkState) throws InterruptedException {
 		int nbStep = 30;
 		//logger.trace("Debut :" + System.currentTimeMillis());
 		led.setState(blinkState);

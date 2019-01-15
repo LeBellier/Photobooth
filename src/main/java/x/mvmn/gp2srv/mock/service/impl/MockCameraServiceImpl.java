@@ -1,5 +1,7 @@
 package x.mvmn.gp2srv.mock.service.impl;
 
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import java.awt.Dimension;
 import java.awt.Rectangle;
 import java.awt.Robot;
@@ -15,14 +17,8 @@ import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
-
 import javax.imageio.ImageIO;
-
 import org.apache.commons.io.IOUtils;
-
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
-
 import x.mvmn.gp2srv.camera.CameraProvider;
 import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.gphoto2.jna.Gphoto2Library;
@@ -60,7 +56,7 @@ public class MockCameraServiceImpl implements CameraService {
 			final Map<String, CameraConfigEntryBean> mockConfig = new Gson().fromJson(
 					IOUtils.toString(this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/config.json")),
 					new TypeToken<Map<String, CameraConfigEntryBean>>() {
-					}.getType());
+			}.getType());
 			initialConfig = Collections.unmodifiableMap(mockConfig);
 			mockPicture = IOUtils.toByteArray(this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/picture.jpg"));
 			reset();
@@ -242,6 +238,10 @@ public class MockCameraServiceImpl implements CameraService {
 	}
 
 	public String downloadFile(String cameraFilePath, String cameraFileName, File downloadFolderPath) {
+		return "Ok";
+	}
+
+	public String downloadFile(String cameraFilePath, String cameraFileName, File downloadFolderPath, String downloadFileName) {
 		return "Ok";
 	}
 
