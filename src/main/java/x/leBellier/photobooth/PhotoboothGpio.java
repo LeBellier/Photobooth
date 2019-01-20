@@ -10,15 +10,12 @@ import com.pi4j.io.gpio.RaspiPin;
 import com.pi4j.io.gpio.event.GpioPinDigitalStateChangeEvent;
 import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import java.io.BufferedReader;
-import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import x.mvmn.gp2srv.camera.CameraService;
+import java.util.logging.Level;
 import x.mvmn.jlibgphoto2.api.CameraFileSystemEntryBean;
 import x.mvmn.jlibgphoto2.exception.GP2CameraBusyException;
 import x.mvmn.log.api.Logger;
@@ -29,9 +26,6 @@ import x.mvmn.log.api.Logger;
  */
 public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 
-	protected final CameraService cameraService;
-	protected final File imageDldFolder;
-	protected final Logger logger;
 	protected final GpioController gpio;
 	protected final GpioPinDigitalOutput printLed;
 	protected final GpioPinDigitalOutput buttonLed;
@@ -39,16 +33,12 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 	protected final GpioPinDigitalInput btnSnip;
 	protected final GpioPinDigitalInput btnReset;
 	protected final boolean EnabedPrinting = true;
-	private static final DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HHmmss");
+
+	private static final Logger logger = BeanSession.getInstance().getLogger();
 
 	private boolean isScriptRunning = false;
 
-	public PhotoboothGpio(Logger logger, CameraService cameraService, File imageDldFolder) {
-
-		this.cameraService = cameraService;
-		this.imageDldFolder = imageDldFolder;
-		this.logger = logger;
-
+	public PhotoboothGpio() {
 		// create gpio controller
 		gpio = GpioFactory.getInstance();
 
@@ -61,7 +51,6 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		btnSnip.addListener(this);
 
 		btnReset = gpio.provisionDigitalInputPin(RaspiPin.GPIO_16, "btn reset", PinPullResistance.PULL_DOWN);
-
 	}
 
 	@Override
@@ -118,7 +107,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 
 				// take photo and save with gphoto2
 				Date date = new Date();
-				String output = String.format("photobooth%s.jpg", sdf.format(date));
+				String output = String.format("photobooth%s.jpg", BeanSession.getSdf().format(date));
 				captureDownload(output);
 				snippedLed.setState(true);
 
@@ -133,8 +122,8 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 			if (EnabedPrinting) {
 				logger.debug("please wait while your photos print...");
 				printLed.setState(false);
-
-				ImageUtils.append4(imageDldFolder, photoFilenames, sdf.format(new Date()));
+				BeanSession beanSession = BeanSession.getInstance();
+				beanSession.getImageUtils().append4(beanSession.getImagesFolder(), photoFilenames, BeanSession.getSdf().format(new Date()));
 
 				// TODO: implement a reboot button
 				// Wait to ensure that print queue doesn't pile up
@@ -147,6 +136,8 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 			logger.error(e.getMessage());
+		} catch (IOException ex) {
+			java.util.logging.Logger.getLogger(PhotoboothGpio.class.getName()).log(Level.SEVERE, null, ex);
 		} finally {
 			isScriptRunning = false;
 		}
@@ -156,9 +147,11 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		int photoFail = 0;
 		while (photoFail < 5) {
 			try {
-				CameraFileSystemEntryBean cfseb = cameraService.capture();
-				cameraService.downloadFile(cfseb.getPath(), cfseb.getName(), imageDldFolder, dstFilename);
-				cameraService.fileDelete(cfseb.getPath(), cfseb.getName());
+				BeanSession beanSession = BeanSession.getInstance();
+
+				CameraFileSystemEntryBean cfseb = beanSession.getCameraService().capture();
+				beanSession.getCameraService().downloadFile(cfseb.getPath(), cfseb.getName(), beanSession.getImagesFolder(), dstFilename);
+				beanSession.getCameraService().fileDelete(cfseb.getPath(), cfseb.getName());
 				break;
 			} catch (GP2CameraBusyException e) {
 				photoFail++;

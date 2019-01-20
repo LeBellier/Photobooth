@@ -1,22 +1,17 @@
 package x.leBellier.photobooth;
 
 import java.io.File;
+import java.io.IOException;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
 import x.mvmn.gp2srv.GPhoto2Server;
-import x.mvmn.gp2srv.camera.CameraProvider;
 import x.mvmn.gp2srv.camera.CameraService;
-import x.mvmn.gp2srv.camera.service.impl.CameraServiceImpl;
-import x.mvmn.gp2srv.mock.service.impl.MockCameraServiceImpl;
-import x.mvmn.jlibgphoto2.api.GP2Camera;
-import x.mvmn.log.PrintStreamLogger;
 import x.mvmn.log.api.Logger;
 import x.mvmn.log.api.Logger.LogLevel;
 
-public final class Snippet implements CameraProvider {
-
-	private volatile GP2Camera camera;
+public final class Snippet {
 
 	public static void main(String[] args) throws Exception {
 		new Snippet(args);
@@ -27,7 +22,7 @@ public final class Snippet implements CameraProvider {
 		try {
 			runScriptPhotobooth(bean.logger, bean.cameraService, bean.imagesFolder);
 
-			GPhoto2Server server = new GPhoto2Server(bean.logger, bean.cameraService, bean.imagesFolder, bean.port, bean.auth);
+			GPhoto2Server server = new GPhoto2Server(bean.port, bean.auth);
 			server.start().join();
 		} catch (Exception e) {
 			bean.logger.error(e);
@@ -36,14 +31,10 @@ public final class Snippet implements CameraProvider {
 	}
 
 	private PhotoboothGpio runScriptPhotobooth(final Logger a_logger, final CameraService a_cameraService, File a_imagesFolder) {
-		PhotoboothGpio photoboothGpio = new PhotoboothGpio(a_logger, a_cameraService, a_imagesFolder);
+		PhotoboothGpio photoboothGpio = new PhotoboothGpio();
 		photoboothGpio.start();
 
 		return photoboothGpio;
-	}
-
-	protected Logger makeLogger(final LogLevel logLevel) {
-		return new PrintStreamLogger(System.out).setLevel(logLevel);
 	}
 
 	protected LauncherBean parseCmdArgs(String[] args) {
@@ -58,17 +49,17 @@ public final class Snippet implements CameraProvider {
 		CommandLine commandLine;
 		try {
 			commandLine = new PosixParser().parse(cliOptions, args);
-
-			Logger logger;
+			BeanSession beanSession = BeanSession.getInstance();
+			Logger logger = beanSession.getLogger();
 			if (commandLine.hasOption("logLevel")) {
 				try {
-					logger = makeLogger(LogLevel.valueOf(commandLine.getOptionValue("logLevel").trim()));
+					logger.setLevel(LogLevel.valueOf(commandLine.getOptionValue("logLevel").trim()));
 				} catch (Exception e) {
 					throw new RuntimeException("Unable to parse logLevel parameter: '"
 							+ cliOptions.getOption("logLevel").getValue() + "'.s");
 				}
 			} else {
-				logger = makeLogger(LogLevel.TRACE);
+				logger.setLevel(LogLevel.TRACE);
 			}
 
 			String[] auth = null;
@@ -82,20 +73,8 @@ public final class Snippet implements CameraProvider {
 				}
 			}
 
-			File imagesFolder = null;
-			File userHome = new File(System.getProperty("user.home"));
-
-			String imageDldPath = commandLine.getOptionValue("imgfolder");
-			if (imageDldPath == null || imageDldPath.trim().isEmpty()) {
-				imageDldPath = new File(userHome, "gp2srv_images").getAbsolutePath();
-			}
-			imagesFolder = new File(imageDldPath);
-			logger.info("Images download folder: " + imagesFolder.getCanonicalPath());
-			if (!imagesFolder.exists()) {
-				imagesFolder.mkdirs();
-			} else if (!imagesFolder.isDirectory()) {
-				throw new RuntimeException("Not a directory: " + imagesFolder);
-			}
+			beanSession.setImagesFolder(commandLine.getOptionValue("imgfolder"));
+			logger.info("Images download folder: " + beanSession.getImagesFolder().getCanonicalPath());
 
 			Integer port = null;
 			if (commandLine.hasOption("port")) {
@@ -112,39 +91,27 @@ public final class Snippet implements CameraProvider {
 				}
 			}
 
-			CameraService cameraService;
-			if (commandLine.hasOption("usemocks")) {
-				cameraService = new MockCameraServiceImpl();
-			} else {
-				cameraService = new CameraServiceImpl(this);
-			}
+			beanSession.setCameraService(commandLine.hasOption("usemocks"));
 
 			LauncherBean bean = new LauncherBean();
 			bean.auth = auth;
-			bean.cameraService = cameraService;
-			bean.imagesFolder = imagesFolder;
-			bean.logger = logger;
 			bean.port = port;
 			return bean;
 
-		} catch (Exception e) {
+		} catch (ParseException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return new LauncherBean();
+		} catch (RuntimeException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return new LauncherBean();
+		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return new LauncherBean();
 		}
 
-	}
-
-	public GP2Camera getCamera() {
-		return camera;
-	}
-
-	public void setCamera(GP2Camera camera) {
-		this.camera = camera;
-	}
-
-	public boolean hasCamera() {
-		return camera != null;
 	}
 
 }

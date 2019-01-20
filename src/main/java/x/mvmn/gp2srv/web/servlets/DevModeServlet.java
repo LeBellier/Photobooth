@@ -1,12 +1,9 @@
 package x.mvmn.gp2srv.web.servlets;
 
 import java.io.IOException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.velocity.context.Context;
-
 import x.mvmn.gp2srv.GPhoto2Server;
 
 public class DevModeServlet extends AbstractErrorHandlingServlet {
@@ -16,7 +13,7 @@ public class DevModeServlet extends AbstractErrorHandlingServlet {
 	private final GPhoto2Server gPhoto2Server;
 
 	public DevModeServlet(final GPhoto2Server gPhoto2Server) {
-		super(gPhoto2Server, gPhoto2Server.getLogger());
+		super();
 		this.gPhoto2Server = gPhoto2Server;
 	}
 

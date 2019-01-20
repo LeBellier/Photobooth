@@ -3,40 +3,24 @@ package x.mvmn.gp2srv.web.servlets;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.IOUtils;
-
+import x.leBellier.photobooth.BeanSession;
 import x.mvmn.gp2srv.web.MimeTypesHelper;
-import x.mvmn.gp2srv.web.service.velocity.TemplateEngine;
-import x.mvmn.lang.util.Provider;
-import x.mvmn.log.api.Logger;
 
 public class ImagesServlet extends AbstractErrorHandlingServlet {
 
 	private static final long serialVersionUID = -2923068775778250752L;
 
-	// private final File imagesFolder;
-	private final String imagesFolderCanonicalPath;
-
-	public ImagesServlet(final Provider<TemplateEngine> templateEngineProvider, final File imagesFolder, Logger logger) throws IOException {
-		super(templateEngineProvider, logger);
-
-		if (!imagesFolder.exists()) {
-			throw new RuntimeException("Images folder does not exist");
-		}
-		if (!imagesFolder.isDirectory()) {
-			throw new RuntimeException("Images folder path doesn't point to a folder (must be a file)");
-		}
-		// this.imagesFolder = imagesFolder;
-		imagesFolderCanonicalPath = imagesFolder.getCanonicalPath();
+	public ImagesServlet() throws IOException {
+		super();
 	}
 
 	protected File processRequest(HttpServletRequest request, HttpServletResponse response) {
 		File result;
 		try {
+			String imagesFolderCanonicalPath = BeanSession.getInstance().getImagesFolder().getCanonicalPath();
 			String path = request.getPathInfo();
 			File targetFile = new File(imagesFolderCanonicalPath + path);
 			String targetFileCanonicalPath = targetFile.getCanonicalPath();

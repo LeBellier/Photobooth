@@ -2,25 +2,20 @@ package x.mvmn.gp2srv.web.servlets;
 
 import java.io.IOException;
 import java.io.Writer;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.velocity.VelocityContext;
-
-import x.mvmn.gp2srv.web.service.velocity.TemplateEngine;
-import x.mvmn.lang.util.Provider;
+import x.leBellier.photobooth.BeanSession;
 import x.mvmn.log.api.Logger;
 
 public abstract class AbstractErrorHandlingServlet extends HttpServletWithTemplates {
 
 	private static final long serialVersionUID = 8638499002251355635L;
-
 	protected final Logger logger;
 
-	public AbstractErrorHandlingServlet(final Provider<TemplateEngine> templateEngineProvider, final Logger logger) {
-		super(templateEngineProvider);
-		this.logger = logger;
+	public AbstractErrorHandlingServlet() {
+		super();
+		this.logger = BeanSession.getInstance().getLogger();
 	}
 
 	protected void returnForbidden(final HttpServletRequest request, final HttpServletResponse response) {
@@ -54,7 +49,7 @@ public abstract class AbstractErrorHandlingServlet extends HttpServletWithTempla
 		context.put("errorMessage", errorMessage);
 		try {
 			Writer writer = response.getWriter();
-			getTemplateEngine().renderTemplate("error.vm", "UTF-8", context, writer);
+			BeanSession.getInstance().provide().renderTemplate("error.vm", "UTF-8", context, writer);
 			writer.flush();
 		} catch (IOException e) {
 			logger.error(e);
@@ -70,7 +65,7 @@ public abstract class AbstractErrorHandlingServlet extends HttpServletWithTempla
 		context.put("errorCode", errorCode);
 		context.put("errorMessage", errorMessage);
 		try {
-			getTemplateEngine().renderTemplate("error.vm", "UTF-8", context, writer);
+			BeanSession.getInstance().provide().renderTemplate("error.vm", "UTF-8", context, writer);
 			writer.flush();
 		} catch (IOException e) {
 			logger.error(e);

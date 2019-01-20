@@ -42,7 +42,7 @@ public class LightMeterImpl {
 
 	public double getForPreview() {
 		try {
-			return doCalc(cameraService.capturePreview());
+			return doCalc(cameraService.capturePreview(null));
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to get image brightness for preview image.", e);
 		}

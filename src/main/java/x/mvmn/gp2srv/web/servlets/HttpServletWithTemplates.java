@@ -1,37 +1,24 @@
 package x.mvmn.gp2srv.web.servlets;
 
+import com.google.gson.Gson;
 import java.io.IOException;
 import java.io.OutputStreamWriter;
 import java.io.Writer;
-
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
 import org.apache.commons.io.IOUtils;
 import org.apache.velocity.VelocityContext;
 import org.apache.velocity.context.Context;
-
-import com.google.gson.Gson;
-
-import x.mvmn.gp2srv.web.service.velocity.TemplateEngine;
-import x.mvmn.lang.util.Provider;
+import x.leBellier.photobooth.BeanSession;
 import x.mvmn.log.api.Logger;
 
 public abstract class HttpServletWithTemplates extends HttpServlet {
 
 	private static final long serialVersionUID = -6614624652923805723L;
-
 	protected static final Gson GSON = new Gson();
 
-	protected final Provider<TemplateEngine> templateEngineProvider;
-
-	public HttpServletWithTemplates(final Provider<TemplateEngine> templateEngineProvider) {
-		this.templateEngineProvider = templateEngineProvider;
-	}
-
-	public TemplateEngine getTemplateEngine() {
-		return this.templateEngineProvider.provide();
+	public HttpServletWithTemplates() {
 	}
 
 	public Context createContext(final HttpServletRequest request, final HttpServletResponse response) {
@@ -65,7 +52,7 @@ public abstract class HttpServletWithTemplates extends HttpServlet {
 		response.setContentType("text/html");
 		response.setCharacterEncoding("UTF-8");
 		Writer writer = response.getWriter();
-		getTemplateEngine().renderTemplate(tempalteName, "UTF-8", context, writer);
+		BeanSession.getInstance().provide().renderTemplate(tempalteName, "UTF-8", context, writer);
 		writer.flush();
 		IOUtils.closeQuietly(writer);
 	}
@@ -100,7 +87,7 @@ public abstract class HttpServletWithTemplates extends HttpServlet {
 	public void serveTempalte(final String tempalteName, final String encoding, final Context context, final HttpServletResponse response) throws IOException {
 		response.setContentType("text/html");
 		Writer writer = new OutputStreamWriter(response.getOutputStream(), encoding);
-		getTemplateEngine().renderTemplate(tempalteName, encoding, context, writer);
+		BeanSession.getInstance().provide().renderTemplate(tempalteName, encoding, context, writer);
 		writer.flush();
 	}
 }

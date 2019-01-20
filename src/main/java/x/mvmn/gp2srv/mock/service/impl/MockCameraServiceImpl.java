@@ -94,7 +94,7 @@ public class MockCameraServiceImpl implements CameraService {
 		this.closed = true;
 	}
 
-	public byte[] capturePreview() {
+	public byte[] capturePreview(String staticViewFilePath) {
 		checkClosed();
 
 		byte[] result = mockPicture;
@@ -119,7 +119,7 @@ public class MockCameraServiceImpl implements CameraService {
 
 	public byte[] fileGetContents(String filePath, String fileName) {
 		checkFileExists(filePath, fileName);
-		return capturePreview();
+		return capturePreview(null);
 	}
 
 	public CameraFileSystemEntryBean capture() {

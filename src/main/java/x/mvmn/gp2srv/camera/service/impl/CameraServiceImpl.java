@@ -1,10 +1,11 @@
 package x.mvmn.gp2srv.camera.service.impl;
 
-import java.io.Closeable;
-import java.io.File;
+import java.awt.image.DataBufferByte;
+import java.io.*;
 import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
+import javax.imageio.*;
 import org.apache.commons.io.FileUtils;
 import x.mvmn.gp2srv.camera.CameraProvider;
 import x.mvmn.gp2srv.camera.CameraService;
@@ -25,7 +26,19 @@ public class CameraServiceImpl implements CameraService, Closeable {
 		cameraProvider.getCamera().close();
 	}
 
-	public synchronized byte[] capturePreview() {
+	public synchronized byte[] capturePreview(String staticViewFilePath) {
+		if (staticViewFilePath != null && !staticViewFilePath.isEmpty()) {
+			try {
+				// open image
+				File imgPath = new File(staticViewFilePath);
+				// get DataBufferBytes from Raster
+				DataBufferByte data = (DataBufferByte) ImageIO.read(imgPath).getRaster().getDataBuffer();
+				return (data.getData());
+
+			} catch (IOException e) {
+				System.out.println("Probleme de chargement du montage");
+			}
+		}
 		return cameraProvider.getCamera().capturePreview();
 	}
 
@@ -139,5 +152,15 @@ public class CameraServiceImpl implements CameraService, Closeable {
 			configMap.put(configEntry.getPath(), configEntry);
 		}
 		return configMap;
+	}
+
+	public byte[] extractBytes(String ImageName) throws IOException {
+		// open image
+		File imgPath = new File(ImageName);
+
+		// get DataBufferBytes from Raster
+		DataBufferByte data = (DataBufferByte) ImageIO.read(imgPath).getRaster().getDataBuffer();
+
+		return (data.getData());
 	}
 }

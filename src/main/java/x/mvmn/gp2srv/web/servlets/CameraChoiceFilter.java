@@ -12,26 +12,23 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import x.leBellier.photobooth.BeanSession;
 
 import x.mvmn.gp2srv.camera.CameraProvider;
-import x.mvmn.gp2srv.web.service.velocity.TemplateEngine;
-import x.mvmn.gp2srv.web.service.velocity.VelocityContextService;
 import x.mvmn.jlibgphoto2.impl.CameraDetectorImpl;
 import x.mvmn.jlibgphoto2.impl.GP2CameraImpl;
 import x.mvmn.jlibgphoto2.impl.GP2PortInfoList;
 import x.mvmn.jlibgphoto2.impl.GP2PortInfoList.GP2PortInfo;
-import x.mvmn.lang.util.Provider;
-import x.mvmn.log.api.Logger;
 
 public class CameraChoiceFilter extends AbstractGP2Servlet implements Filter {
+
 	private static final long serialVersionUID = 1827967172388376853L;
 
 	private final CameraProvider camProvider;
 
-	public CameraChoiceFilter(final CameraProvider camProvider, final VelocityContextService velocityContextService,
-			final Provider<TemplateEngine> templateEngineProvider, final Logger logger) {
-		super(velocityContextService, templateEngineProvider, logger);
-		this.camProvider = camProvider;
+	public CameraChoiceFilter() {
+		super();
+		this.camProvider = BeanSession.getInstance();
 	}
 
 	public void init(FilterConfig filterConfig) throws ServletException {
@@ -54,7 +51,7 @@ public class CameraChoiceFilter extends AbstractGP2Servlet implements Filter {
 							if (gp2PortInfo != null) {
 								camProvider.setCamera(new GP2CameraImpl(gp2PortInfo));
 								httpResponse.sendRedirect(httpRequest.getRequestURI());
-                                
+
 							} else {
 								httpResponse.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 							}

@@ -1,6 +1,7 @@
 package x.mvmn.gp2srv.web.servlets;
 
-import java.io.File;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
@@ -8,44 +9,31 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
-import x.mvmn.gp2srv.camera.CameraService;
+import x.leBellier.photobooth.BeanSession;
 import x.mvmn.gp2srv.scripting.model.ScriptExecution;
 import x.mvmn.gp2srv.scripting.model.ScriptStep;
 import x.mvmn.gp2srv.scripting.service.impl.ScriptExecutionServiceImpl;
 import x.mvmn.gp2srv.scripting.service.impl.ScriptsManagementServiceImpl;
-import x.mvmn.gp2srv.web.service.velocity.TemplateEngine;
-import x.mvmn.gp2srv.web.service.velocity.VelocityContextService;
-import x.mvmn.lang.util.Provider;
-import x.mvmn.log.api.Logger;
 
 public class ScriptingServlet extends AbstractGP2Servlet {
+
 	private static final long serialVersionUID = -8824710026933050754L;
 	protected static final Gson GSON = new GsonBuilder().create();
 
 	protected final ScriptsManagementServiceImpl scriptManagementService;
 	protected final ScriptExecutionServiceImpl scriptExecService;
 	protected final ScriptExecWebSocketNotifier scriptExecWebSocketNotifier;
-	protected final CameraService cameraService;
 	protected final AtomicBoolean scriptDumpVars;
-	protected final File imgDownloadPath;
 
-	public ScriptingServlet(final CameraService cameraService, ScriptsManagementServiceImpl scriptManagementService,
-			ScriptExecutionServiceImpl scriptExecService, ScriptExecWebSocketNotifier scriptExecWebSocketNotifier, AtomicBoolean scriptDumpVars,
-			VelocityContextService velocityContextService, Provider<TemplateEngine> templateEngineProvider, final File imgDownloadPath, Logger logger) {
-		super(velocityContextService, templateEngineProvider, logger);
-		this.cameraService = cameraService;
+	public ScriptingServlet(ScriptsManagementServiceImpl scriptManagementService,
+			ScriptExecutionServiceImpl scriptExecService, ScriptExecWebSocketNotifier scriptExecWebSocketNotifier, AtomicBoolean scriptDumpVars) {
+		super();
 		this.scriptManagementService = scriptManagementService;
 		this.scriptExecService = scriptExecService;
 		this.scriptExecWebSocketNotifier = scriptExecWebSocketNotifier;
 		this.scriptDumpVars = scriptDumpVars;
-		this.imgDownloadPath = imgDownloadPath;
 	}
 
 	@Override
@@ -138,7 +126,7 @@ public class ScriptingServlet extends AbstractGP2Servlet {
 				List<ScriptStep> scriptContent = scriptManagementService.load(scriptName);
 				String result;
 				if (scriptContent != null) {
-					execution = scriptExecService.execute(cameraService, imgDownloadPath, logger, scriptName, scriptContent, scriptExecWebSocketNotifier);
+					execution = scriptExecService.execute(BeanSession.getInstance().getCameraService(), BeanSession.getInstance().getImagesFolder(), logger, scriptName, scriptContent, scriptExecWebSocketNotifier);
 					if (execution != null) {
 						result = "Script has been run";
 					} else {

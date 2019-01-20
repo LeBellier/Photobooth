@@ -196,10 +196,10 @@
 						<configuration>
 							<tasks>
 								<echo file="${project.build.directory}/run.sh" append="false">
-									java&#032;-jar&#032;GPhoto2Server-${project.version}.jar
+									java&#032;-Xms300M&#032;-jar&#032;GPhoto2Server-${project.version}.jar
 								</echo>
 								<echo file="${project.build.directory}/run.bat" append="false">
-									java&#032;-jar&#032;GPhoto2Server-${project.version}.jar
+									java&#032;-Xms300M&#032;-jar&#032;GPhoto2Server-${project.version}.jar
 								</echo>
 								<echo>ANT TASK - copying files....</echo>
 								<!--copy todir="${basedir}/distribution/" overwrite="true" flatten="true">
