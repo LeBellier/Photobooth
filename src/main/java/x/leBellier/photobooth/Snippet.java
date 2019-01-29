@@ -20,7 +20,7 @@ public final class Snippet {
 	public Snippet(String[] args) {
 		LauncherBean bean = parseCmdArgs(args);
 		try {
-			runScriptPhotobooth(bean.logger, bean.cameraService, bean.imagesFolder);
+			new PhotoboothGpio().start();
 
 			GPhoto2Server server = new GPhoto2Server(bean.port, bean.auth);
 			server.start().join();
@@ -28,13 +28,6 @@ public final class Snippet {
 			bean.logger.error(e);
 		} finally {
 		}
-	}
-
-	private PhotoboothGpio runScriptPhotobooth(final Logger a_logger, final CameraService a_cameraService, File a_imagesFolder) {
-		PhotoboothGpio photoboothGpio = new PhotoboothGpio();
-		photoboothGpio.start();
-
-		return photoboothGpio;
 	}
 
 	protected LauncherBean parseCmdArgs(String[] args) {

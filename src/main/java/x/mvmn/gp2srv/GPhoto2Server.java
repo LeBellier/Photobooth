@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.EnumSet;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -30,6 +31,10 @@ import x.mvmn.gp2srv.web.servlets.ScriptExecWebSocketNotifier;
 import x.mvmn.gp2srv.web.servlets.ScriptExecutionReportingWebSocketServlet;
 import x.mvmn.gp2srv.web.servlets.ScriptingServlet;
 import x.mvmn.gp2srv.web.servlets.StaticsResourcesServlet;
+import x.mvmn.jlibgphoto2.api.CameraListItemBean;
+import x.mvmn.jlibgphoto2.impl.CameraDetectorImpl;
+import x.mvmn.jlibgphoto2.impl.GP2CameraImpl;
+import x.mvmn.jlibgphoto2.impl.GP2PortInfoList;
 import x.mvmn.lang.util.WaitUtil;
 import x.mvmn.log.api.Logger;
 import x.mvmn.util.FileBackedProperties;
@@ -131,6 +136,18 @@ public class GPhoto2Server {
 			context.addServlet(new ServletHolder(new LiveViewServlet()), "/stream.mjpeg");
 
 			server.setHandler(context);
+
+			List<CameraListItemBean> list = new CameraDetectorImpl().detectCameras();
+			if (list.size() > 0) {
+				GP2PortInfoList portList = new GP2PortInfoList();
+				GP2PortInfoList.GP2PortInfo gp2PortInfo = portList.getByPath(list.get(0).getPortName());
+				if (gp2PortInfo != null) {
+					beanSession.setCamera(new GP2CameraImpl(gp2PortInfo));
+					logger.info("A camera is found  ! :) I connect the " + list.get(0).getCameraModel());
+				} else {
+					logger.info("No camer is connected :( ");
+				}
+			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}

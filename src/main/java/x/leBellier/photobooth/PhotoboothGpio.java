@@ -34,9 +34,11 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 	protected final GpioPinDigitalInput btnReset;
 	protected final boolean EnabedPrinting = true;
 
-	private static final Logger logger = BeanSession.getInstance().getLogger();
+	private Logger logger = BeanSession.getInstance().getLogger();
 
+	private boolean goScript = false;
 	private boolean isScriptRunning = false;
+	private PrintingState iswaitingAck = PrintingState.NotNeeded;
 
 	public PhotoboothGpio() {
 		// create gpio controller
@@ -51,56 +53,55 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		btnSnip.addListener(this);
 
 		btnReset = gpio.provisionDigitalInputPin(RaspiPin.GPIO_16, "btn reset", PinPullResistance.PULL_DOWN);
+		btnReset.addListener(this);
 	}
 
 	@Override
 	public void run() {
 		// keep program running until user aborts (CTRL-C)
 		try {
+			logger = BeanSession.getInstance().getLogger();
+
+			logger.debug("Press enter to snap :p");
 			while (true) {
 
 				BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
 				buttonLed.setState(false);
-				logger.debug("Press enter to snap :p");
-				String s = br.readLine();
-				handleGpioPinDigitalStateChangeEvent(null);
+				if (br.ready()) {
+					String s = br.readLine();
+					goScript = true;
+				}
 
-				Thread.sleep(8500);
-
+				if (goScript) {
+					RunScript();
+				}
+				Thread.sleep(1500);
 			}
 		} catch (InterruptedException e) {
 			logger.error(e.getMessage());
 		} catch (IOException ex) {
 			logger.error(ex.getMessage());
-
 		} finally {
 			gpio.shutdown();
 		}
 	}
 
-	public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
-		if (event != null && event.getState().isHigh()) {
-			logger.trace("Bouton relaché");
-			return;
-		}
+	private void RunScript() {
 		if (isScriptRunning) {
 			logger.warn("Le script est en execution ! Attend un peu !");
 			return;
 		}
-
 		isScriptRunning = true;
 		int snap = 0;
-		int coefDebug = 1;
+		int coefDebug = 100;
 		List<String> photoFilenames = new LinkedList<String>();
 		try {
+			int blinking = 1000;
 			while (snap < 4) {
 				logger.debug("pose!");
 				buttonLed.setState(true);
 				snippedLed.setState(false);
-				Thread.sleep(150 * coefDebug);
-
-				int blinking = 1000;
-				blinkRampe(blinking, 1000 * coefDebug, snippedLed, PinState.LOW);
+				blinkRampe(blinking, 1 * coefDebug, snippedLed, PinState.LOW);
 
 				snippedLed.setState(false);
 				logger.debug("SNAP !!!!");
@@ -118,20 +119,35 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 
 			// Google Drive uploading #drive = gdrive.authorize_gdrive_api()
 			// gdrive.upload_files_to_gdrive(drive, photo_files)
-			//
 			if (EnabedPrinting) {
 				logger.debug("please wait while your photos print...");
 				printLed.setState(false);
 				BeanSession beanSession = BeanSession.getInstance();
-				beanSession.getImageUtils().append4(beanSession.getImagesFolder(), photoFilenames, BeanSession.getSdf().format(new Date()));
+				String path = String.format("%s/Montage%s.jpg", beanSession.getImagesFolder(), BeanSession.getSdf().format(new Date()));
+
+				beanSession.getImageUtils().append4(beanSession.getImagesFolder(), photoFilenames, path);
+
+				logger.debug("Do you want to print ?");
+				iswaitingAck = PrintingState.WaitAck;
+				while (iswaitingAck == PrintingState.WaitAck) {
+					printLed.toggle();
+					Thread.sleep(500);
+					logger.trace("Jattends");
+
+				}
+				if (iswaitingAck == PrintingState.PositiveAck) {
+					beanSession.getImageUtils().printImage(path);
+					logger.trace("Jimprime");
+
+				} else {
+					logger.trace("Jimprime pas  c'est de la merde");
+				}
+				iswaitingAck = PrintingState.NotNeeded;
 
 				// TODO: implement a reboot button
 				// Wait to ensure that print queue doesn't pile up
 				// TODO: check status of printer instead of using this arbitrary wait time
 			}
-
-			printLed.setState(true);
-			logger.debug("ready for next round");
 
 		} catch (InterruptedException e) {
 			e.printStackTrace();
@@ -139,7 +155,30 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		} catch (IOException ex) {
 			java.util.logging.Logger.getLogger(PhotoboothGpio.class.getName()).log(Level.SEVERE, null, ex);
 		} finally {
+			snippedLed.setState(true);
+			printLed.setState(true);
+			logger.debug("ready for next round");
+			buttonLed.setState(false);
 			isScriptRunning = false;
+			goScript = false;
+		}
+	}
+
+	public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
+		if (event != null && event.getState().isHigh()) {
+			logger.trace("Bouton relaché");
+			return;
+		}
+
+		if (event.getPin() == btnSnip && !isScriptRunning) {
+			goScript = true;
+		}
+		if (isScriptRunning && iswaitingAck == PrintingState.WaitAck) {
+			if (event.getPin() == btnReset) {
+				iswaitingAck = PrintingState.NegativeAck;
+			} else if (event.getPin() == btnSnip) {
+				iswaitingAck = PrintingState.PositiveAck;
+			}
 		}
 	}
 
@@ -186,6 +225,17 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		}
 		led.setState(blinkState);
 		//logger.trace("Fin   :" + System.currentTimeMillis());
+	}
+
+	enum PrintingState {
+		NotNeeded,
+		WaitAck,
+		PositiveAck,
+		NegativeAck
+	}
+
+	public void setGoScript() {
+		goScript = true;
 	}
 
 }

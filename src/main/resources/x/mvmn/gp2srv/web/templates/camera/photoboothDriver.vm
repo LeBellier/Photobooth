@@ -42,6 +42,22 @@
 						restartLiveView();
 					});
 				},
+				runPhotobooth: function(event) {
+					var captureButton = event.node;
+					captureButton.disabled = true;
+					$.ajax({
+						url: '$!{request.contextPath}/runPhotobooth',
+						method: 'POST'
+					}).fail(function(jqXHR, textStatus) {
+						captureButton.disabled = false;
+						console.log(jqXHR);
+						alert("Error occurred: "+textStatus);
+						restartLiveView();
+					}).done(function() {
+						captureButton.disabled = false;
+						restartLiveView();
+					});
+				},
 				toggleLiveView: function(event) {
 					$(event.node).parent().find("input").click();
 				},

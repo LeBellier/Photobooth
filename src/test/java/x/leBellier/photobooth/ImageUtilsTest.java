@@ -20,7 +20,8 @@ public class ImageUtilsTest {
 
 	@Test
 	public void testExecution() {
-		System.out.println("please wait while your photos print...");
+		System.out.println("Test is running");
+		BeanSession beanSession = BeanSession.getInstance();
 		List<String> photoFilenames = new LinkedList<String>();
 		photoFilenames.add("capt0001.jpg");
 		photoFilenames.add("capt0002.jpg");
@@ -32,13 +33,15 @@ public class ImageUtilsTest {
 			ClassLoader classLoader = getClass().getClassLoader();
 
 			File file = new File(classLoader.getResource("x/leBellier/photobooth/capt0001.jpg").getFile());
-			BeanSession.getInstance().setImagesFolder(file.getParent());
+			beanSession.setImagesFolder(file.getParent());
 			File imageDldFolder = file.getParentFile();
 			String date = sdf.format(new Date());
-			BeanSession.getInstance().getImageUtils().append4(BeanSession.getInstance().getImagesFolder(), photoFilenames, date);
+			String path = String.format("%s/Montage%s.jpg", imageDldFolder, date);
 
-			BufferedImage imgRes = ImageUtils.readPhotoFile(imageDldFolder, String.format("Montage%s.jpg", date));
-			BufferedImage imgRef = ImageUtils.readPhotoFile(imageDldFolder, "Montage.jpg");
+			beanSession.getImageUtils().append4(BeanSession.getInstance().getImagesFolder(), photoFilenames, path);
+
+			BufferedImage imgRes = beanSession.getImageUtils().readPhotoFile(imageDldFolder, String.format("Montage%s.jpg", date));
+			BufferedImage imgRef = beanSession.getImageUtils().readPhotoFile(imageDldFolder, "Montage.jpg");
 			Assert.assertTrue(compareImages(imgRes, imgRef));
 
 			new File(imageDldFolder, String.format("Montage%s.jpg", date)).delete();

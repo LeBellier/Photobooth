@@ -3,7 +3,6 @@ package x.mvmn.gp2srv.web.servlets;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
@@ -13,7 +12,6 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import x.leBellier.photobooth.BeanSession;
-
 import x.mvmn.gp2srv.camera.CameraProvider;
 import x.mvmn.jlibgphoto2.impl.CameraDetectorImpl;
 import x.mvmn.jlibgphoto2.impl.GP2CameraImpl;

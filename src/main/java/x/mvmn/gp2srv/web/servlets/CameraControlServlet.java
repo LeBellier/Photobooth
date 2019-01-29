@@ -90,6 +90,11 @@ public class CameraControlServlet extends AbstractGP2Servlet {
 				cameraService.fileDelete(cfseb.getPath(), cfseb.getName());
 
 				serveJson(Boolean.TRUE, response);
+			} else if ("/runPhotobooth".equals(requestPath)) {
+				logger.trace("Je vais appuyer sur le photobooth");
+				//BeanSession.getInstance().takePicturesAndPrint();
+
+				serveJson(Boolean.TRUE, response);
 			} else if ("/downloadcamfile".equals(requestPath)) {
 				final String fileName = request.getParameter("name");
 				final String filePath = request.getParameter("folder");

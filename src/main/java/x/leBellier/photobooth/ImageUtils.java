@@ -4,11 +4,15 @@ import java.awt.Color;
 import java.awt.Graphics2D;
 import java.awt.RenderingHints;
 import java.awt.image.BufferedImage;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.Observable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.imageio.ImageIO;
 
 /**
@@ -22,30 +26,32 @@ public class ImageUtils extends Observable {
 	 *
 	 * @param imagesFolder : must contain images and will contains the result
 	 * @param photoFilenames: must have 4 filenames
-	 * @param outFileSuffixe : the output is "Montage%outFileSuffixe%.jpg"
+	 * @param outFilePath : the output is "Montage%outFileSuffixe%.jpg"
 	 * @throws IOException
 	 */
-	public void append4(File imagesFolder, List<String> photoFilenames, String outFileSuffixe) throws IOException {
+	public void append4(File imagesFolder, List<String> photoFilenames, String outFilePath) throws IOException {
 
 		BufferedImage imageHaut = appendH(imagesFolder, photoFilenames.get(0), photoFilenames.get(1));
 		BufferedImage imageBasse = appendH(imagesFolder, photoFilenames.get(2), photoFilenames.get(3));
 
 		BufferedImage image = appendV(imageHaut, imageBasse);
 
-		String path = String.format("%s/Montage%s.jpg", imagesFolder, outFileSuffixe);
-		ImageIO.write(image, "JPEG", new File(path));
-		notifyObservers(path);
+		ImageIO.write(image, "JPEG", new File(outFilePath));
+		notifyObservers(outFilePath);
 	}
 
 	/**
-	 * Append Vertically 2 images
+	 * Merge img1Filename and img2Filename from imageDldFolder Horizontally
 	 *
-	 * @param img1
-	 * @param img2
+	 * @param imageDldFolder
+	 * @param img1Filename
+	 * @param img2Filename
 	 * @return
 	 * @throws IOException
 	 */
-	private static BufferedImage appendV(BufferedImage img1, BufferedImage img2) throws IOException {
+	private BufferedImage appendH(File imageDldFolder, String img1Filename, String img2Filename) throws IOException {
+		BufferedImage img1 = readPhotoFile(imageDldFolder, img1Filename);
+		BufferedImage img2 = readPhotoFile(imageDldFolder, img2Filename);
 		int padding = 10;
 		BufferedImage buf = null;
 		if (img1 != null && img2 != null) {
@@ -57,20 +63,26 @@ public class ImageUtils extends Observable {
 			int wMax = 0;
 			// hMax = h1 si h1>=h2  sinon hMax = h2
 			hMax = (h1 >= h2) ? h1 : h2;
-			wMax = w1 + w2;
-			buf = new BufferedImage(wMax + padding, hMax, BufferedImage.TYPE_INT_RGB); // ligne 27
+			wMax = w1 + w2 + padding;
+			buf = new BufferedImage(wMax, hMax, BufferedImage.TYPE_INT_RGB); // ligne 27
 			Graphics2D g2 = buf.createGraphics();
-			g2.setBackground(Color.WHITE);
+			g2.setColor(Color.WHITE);
+			g2.fillRect(w1, 0, w1 + padding, h1);
 			g2.drawImage(img1, 0, 0, null);
 			g2.drawImage(img2, w1 + padding, 0, null);
 		}
 		return buf;
 	}
 
-	// ASSEMBLAGE des deux images
-	private static BufferedImage appendH(File imageDldFolder, String img1Filename, String img2Filename) throws IOException {
-		BufferedImage img1 = readPhotoFile(imageDldFolder, img1Filename);
-		BufferedImage img2 = readPhotoFile(imageDldFolder, img2Filename);
+	/**
+	 * Merge img1 and img2 vertically
+	 *
+	 * @param img1
+	 * @param img2
+	 * @return
+	 * @throws IOException
+	 */
+	private BufferedImage appendV(BufferedImage img1, BufferedImage img2) throws IOException {
 
 		int padding = 10;
 		BufferedImage buf = null;
@@ -86,14 +98,15 @@ public class ImageUtils extends Observable {
 			hMax = h1 + h2;
 			buf = new BufferedImage(wMax, hMax + padding, BufferedImage.TYPE_3BYTE_BGR); // ligne 27
 			Graphics2D g2 = buf.createGraphics();
-			g2.setBackground(Color.WHITE);
+			g2.setColor(Color.WHITE);
+			g2.fillRect(0, h1, w1, h1 + padding);
 			g2.drawImage(img1, 0, 0, null);
 			g2.drawImage(img2, 0, h1 + padding, null);
 		}
 		return buf;
 	}
 
-	private static BufferedImage resize(BufferedImage img, int newW, int newH) {
+	private BufferedImage resize(BufferedImage img, int newW, int newH) {
 		int w = img.getWidth();
 		int h = img.getHeight();
 		BufferedImage dimg = new BufferedImage(newW, newH, img.getType());
@@ -104,13 +117,13 @@ public class ImageUtils extends Observable {
 		return dimg;
 	}
 
-	public static BufferedImage readPhotoFile(File imageDldFolder, String filename) throws IOException {
+	public BufferedImage readPhotoFile(File imageDldFolder, String filename) throws IOException {
 		String photoPath = String.format("%s/%s", imageDldFolder, filename);
-		BufferedImage res = ImageUtils.resize(ImageIO.read(new File(photoPath)), 1296, 864);
+		BufferedImage res = resize(ImageIO.read(new File(photoPath)), 1296, 864);
 		return res;
 	}
 
-	private static void printFreeMemorie() {
+	private void printFreeMemorie() {
 		Runtime runtime = Runtime.getRuntime();
 		NumberFormat format = NumberFormat.getInstance();
 
@@ -125,5 +138,29 @@ public class ImageUtils extends Observable {
 		sb.append("total free memory: " + format.format((freeMemory + (maxMemory - allocatedMemory)) / 1024) + "\n");
 
 		System.out.println(sb.toString());
+	}
+
+	public void printImage(String filename) {
+		try {
+			ProcessBuilder processBuilder = new ProcessBuilder();
+			processBuilder.command("lp", "-d", "KODAK_EasyShare", filename);
+
+			Process process = processBuilder.start();
+			StringBuilder output = new StringBuilder();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+
+			String line;
+			while ((line = reader.readLine()) != null) {
+				output.append(line).append("\n");
+			}
+
+			int exitVal = process.waitFor();
+			if (exitVal == 0) {
+				System.out.println("Success!");
+				System.out.println(output);
+			}
+		} catch (Exception ex) {
+			Logger.getLogger(ImageUtils.class.getName()).log(Level.SEVERE, null, ex);
+		}
 	}
 }
