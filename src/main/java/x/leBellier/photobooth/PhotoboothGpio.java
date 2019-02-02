@@ -15,7 +15,6 @@ import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import x.mvmn.gp2srv.camera.service.impl.CameraServiceImpl;
 import x.mvmn.jlibgphoto2.api.CameraFileSystemEntryBean;
 import x.mvmn.jlibgphoto2.exception.GP2CameraBusyException;
 import x.mvmn.log.api.Logger;
@@ -99,7 +98,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 			//GPhoto2Server.liveViewEnabled.set(false);
 			BeanSession beanSession = BeanSession.getInstance();
 
-			((CameraServiceImpl) beanSession.getCameraService()).extractBytes("");
+			beanSession.getCameraService().setImageForLiveView(beanSession.getUserHome() + "/gp2srv/attente.jpg");
 			int blinking = 500;
 			while (snap < 4) {
 				logger.debug("pose!");
@@ -130,7 +129,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 
 				beanSession.getImageUtils().append4(beanSession.getImagesFolder(), photoFilenames, path);
 
-				((CameraServiceImpl) beanSession.getCameraService()).extractBytes(path);
+				beanSession.getCameraService().setImageForLiveView(path);
 
 				logger.debug("Do you want to print ?");
 				iswaitingAck = PrintingState.WaitAck;
@@ -140,7 +139,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 					logger.trace("Jattends");
 
 				}
-				((CameraServiceImpl) beanSession.getCameraService()).extractBytes("null");
+				beanSession.getCameraService().setImageForLiveView("null");
 
 				if (iswaitingAck == PrintingState.PositiveAck) {
 					beanSession.getImageUtils().printImage(path);

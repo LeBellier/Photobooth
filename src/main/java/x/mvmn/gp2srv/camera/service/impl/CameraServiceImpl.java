@@ -19,69 +19,94 @@ public class CameraServiceImpl implements CameraService, Closeable {
 
 	private final CameraProvider cameraProvider;
 	protected byte[] mockPicture;
+	private int haveSendMock;
 
 	public CameraServiceImpl(final CameraProvider camera) {
 		this.cameraProvider = camera;
 	}
 
+	@Override
 	public void close() {
 		cameraProvider.getCamera().close();
 	}
 
+	@Override
 	public synchronized byte[] capturePreview() {
 		if (!Objects.isNull(mockPicture)) {
+			if (haveSendMock == 2) {// peut etre que 1
+				return new byte[1];
+			}
+			haveSendMock++;
 			return mockPicture;
 		}
 		return cameraProvider.getCamera().capturePreview();
 	}
 
+	@Override
+	public boolean isSlowRefresh() {
+		return haveSendMock == 2;
+	}
+
+	@Override
 	public synchronized CameraServiceImpl releaseCamera() {
 		cameraProvider.getCamera().release();
 		return this;
 	}
 
+	@Override
 	public synchronized CameraFileSystemEntryBean capture() {
 		return cameraProvider.getCamera().captureImage();
 	}
 
+	@Override
 	public synchronized CameraFileSystemEntryBean capture(final GP2CameraCaptureType captureType) {
 		return cameraProvider.getCamera().capture(captureType);
 	}
 
+	@Override
 	public synchronized String getSummary() {
 		return cameraProvider.getCamera().getSummary();
 	}
 
+	@Override
 	public GP2CameraEventType waitForSpecificEvent(int timeout, GP2CameraEventType expectedEventType) {
 		return cameraProvider.getCamera().waitForSpecificEvent(timeout, expectedEventType);
 	}
 
+	@Override
 	public GP2CameraEventType waitForEvent(int timeout) {
 		return cameraProvider.getCamera().waitForEvent(timeout);
 	}
+
+	@Override
 
 	public synchronized List<CameraConfigEntryBean> getConfig() {
 		return cameraProvider.getCamera().getConfig();
 	}
 
+	@Override
 	public synchronized CameraServiceImpl setConfig(CameraConfigEntryBean configEntry) {
 		cameraProvider.getCamera().setConfig(configEntry);
 		return this;
 	}
 
+	@Override
 	public synchronized List<CameraFileSystemEntryBean> filesList(final String path, boolean includeFiles, boolean includeFolders, boolean recursive) {
 		return cameraProvider.getCamera().listCameraFiles(path, includeFiles, includeFolders, recursive);
 	}
 
+	@Override
 	public synchronized CameraServiceImpl fileDelete(final String filePath, final String fileName) {
 		cameraProvider.getCamera().deleteCameraFile(filePath, fileName);
 		return this;
 	}
 
+	@Override
 	public CameraProvider getCameraProvider() {
 		return cameraProvider;
 	}
 
+	@Override
 	public String downloadFile(final String cameraFilePath, final String cameraFileName, final File downloadFolder) {
 		String result = null;
 		byte[] content = fileGetContents(cameraFilePath, cameraFileName);
@@ -106,6 +131,7 @@ public class CameraServiceImpl implements CameraService, Closeable {
 		return result.trim();
 	}
 
+	@Override
 	public String downloadFile(final String cameraFilePath, final String cameraFileName, final File downloadFolder, final String downloadFileName) {
 		String result = null;
 		byte[] content = fileGetContents(cameraFilePath, cameraFileName);
@@ -130,14 +156,17 @@ public class CameraServiceImpl implements CameraService, Closeable {
 		return result.trim();
 	}
 
+	@Override
 	public synchronized byte[] fileGetContents(final String filePath, final String fileName) {
 		return cameraProvider.getCamera().getCameraFileContents(filePath, fileName);
 	}
 
+	@Override
 	public synchronized byte[] fileGetThumb(final String filePath, final String fileName) {
 		return cameraProvider.getCamera().getCameraFileContents(filePath, fileName, true);
 	}
 
+	@Override
 	public Map<String, CameraConfigEntryBean> getConfigAsMap() {
 		final List<CameraConfigEntryBean> config = this.getConfig();
 		final Map<String, CameraConfigEntryBean> configMap = new TreeMap<String, CameraConfigEntryBean>();
@@ -147,47 +176,46 @@ public class CameraServiceImpl implements CameraService, Closeable {
 		return configMap;
 	}
 
-	public void extractBytes(String imageFilePath) throws IOException {
-		if (imageFilePath == "null") {
-			mockPicture = null;
-			return;
-		}
-		/*mockPicture = IOUtils.toByteArray(this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/picture.jpg"));
-
-		// open image
-		File imgPath = new File(imageFilePath);
-		// get DataBufferBytes from Raster
-		//DataBufferByte data = (DataBufferByte) ImageIO.read(imgPath).getRaster().getDataBuffer();
-		//mockPicture = (data.getData());
-		FileInputStream fileInputStream = new FileInputStream(imgPath);
-		BeanSession.getInstance().getLogger().trace(fileInputStream.toString());
-		mockPicture = IOUtils.toByteArray(fileInputStream);*/
-
-		InputStream inputStream = null;
-		try {
-			// open image
+	/**
+	 *
+	 * @param imageFilePath = "null" => delete the actual image and return to
+	 * liveView
+	 * @throws IOException
+	 */
+	@Override
+	public void setImageForLiveView(String imageFilePath) {
+		byte[] imageTemp = null;
+		if (imageFilePath != "null") {
+			InputStream inputStream = null;
 			try {
-				File imgPath = new File(imageFilePath);
-				inputStream = new FileInputStream(imgPath);
-			} catch (Exception e) {
-				BeanSession.getInstance().getLogger().trace("Echec de la vie avec cette image : " + imageFilePath);
-			}
+				try {
+					// open image
+					File imgPath = new File(imageFilePath);
+					inputStream = new FileInputStream(imgPath);
+				} catch (Exception e) {
+					BeanSession.getInstance().getLogger().trace("Echec de la vie avec cette image : " + imageFilePath);
+				}
 
-			if (inputStream == null) {
-				inputStream = this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/picture.jpg");
+				if (inputStream == null) {
+					inputStream = this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/picture.jpg");
+				}
 
-			}
-
-			mockPicture = IOUtils.toByteArray(inputStream);
-			releaseCamera();
-		} catch (Exception ex) {
-			BeanSession.getInstance().getLogger().trace(ex);
-		} finally {
-			try {
-				inputStream.close();
-			} catch (IOException ex) {
+				imageTemp = IOUtils.toByteArray(inputStream);
+				releaseCamera();
+			} catch (Exception ex) {
 				BeanSession.getInstance().getLogger().trace(ex);
+			} finally {
+				try {
+					inputStream.close();
+				} catch (IOException ex) {
+					BeanSession.getInstance().getLogger().trace(ex);
+				}
 			}
+		}
+		if (mockPicture != imageTemp) {
+			mockPicture = imageTemp;
+			haveSendMock = 0;
+			BeanSession.getInstance().getLogger().trace("New picture set : " + imageFilePath);
 		}
 	}
 }

@@ -14,6 +14,8 @@ public interface CameraService {
 
 	public byte[] capturePreview();
 
+	public boolean isSlowRefresh();
+
 	public CameraService releaseCamera();
 
 	public CameraFileSystemEntryBean capture();
@@ -45,4 +47,11 @@ public interface CameraService {
 	public String downloadFile(final String cameraFilePath, final String cameraFileName, final File downloadFolder, final String downloadFileName);
 
 	public CameraProvider getCameraProvider();
+
+	/**
+	 *
+	 * @param imageFilePath = "null" => delete the actual image and return to
+	 * liveView
+	 */
+	public void setImageForLiveView(String imageFilePath);
 }

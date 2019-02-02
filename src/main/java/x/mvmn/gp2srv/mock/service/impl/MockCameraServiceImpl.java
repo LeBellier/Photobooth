@@ -89,11 +89,13 @@ public class MockCameraServiceImpl implements CameraService {
 		counter.set(0);
 	}
 
+	@Override
 	public void close() {
 		checkClosed();
 		this.closed = true;
 	}
 
+	@Override
 	public byte[] capturePreview() {
 		checkClosed();
 
@@ -117,11 +119,18 @@ public class MockCameraServiceImpl implements CameraService {
 		return result;
 	}
 
+	@Override
+	public boolean isSlowRefresh() {
+		return false;
+	}
+
+	@Override
 	public byte[] fileGetContents(String filePath, String fileName) {
 		checkFileExists(filePath, fileName);
 		return capturePreview();
 	}
 
+	@Override
 	public CameraFileSystemEntryBean capture() {
 		checkClosed();
 		CameraFileSystemEntryBean newCapture = new CameraFileSystemEntryBean(String.format("photo%08d.jpg", counter.incrementAndGet()), "/photos", false);
@@ -129,6 +138,7 @@ public class MockCameraServiceImpl implements CameraService {
 		return newCapture;
 	}
 
+	@Override
 	public CameraFileSystemEntryBean capture(GP2CameraCaptureType captureType) {
 		if (!captureType.equals(GP2CameraCaptureType.IMAGE)) {
 			throw new UnsupportedOperationException();
@@ -136,16 +146,19 @@ public class MockCameraServiceImpl implements CameraService {
 		return capture();
 	}
 
+	@Override
 	public String getSummary() {
 		checkClosed();
 		return "Mock";
 	}
 
+	@Override
 	public GP2CameraEventType waitForSpecificEvent(int timeout, GP2CameraEventType expectedEventType) {
 		checkClosed();
 		return null;
 	}
 
+	@Override
 	public GP2CameraEventType waitForEvent(int timeout) {
 		checkClosed();
 		return null;
@@ -165,6 +178,7 @@ public class MockCameraServiceImpl implements CameraService {
 		return fsEntry;
 	}
 
+	@Override
 	public CameraService fileDelete(String filePath, String fileName) {
 		checkClosed();
 		if (!filePath.endsWith("/")) {
@@ -178,6 +192,7 @@ public class MockCameraServiceImpl implements CameraService {
 		return this;
 	}
 
+	@Override
 	public List<CameraFileSystemEntryBean> filesList(String path, boolean includeFiles, boolean includeFolders, boolean recursive) {
 		checkClosed();
 
@@ -208,22 +223,26 @@ public class MockCameraServiceImpl implements CameraService {
 		return result;
 	}
 
+	@Override
 	public List<CameraConfigEntryBean> getConfig() {
 		checkClosed();
 		return new ArrayList<CameraConfigEntryBean>(config.values());
 	}
 
+	@Override
 	public CameraService setConfig(CameraConfigEntryBean configEntry) {
 		checkClosed();
 		config.put(configEntry.getPath(), configEntry);
 		return this;
 	}
 
+	@Override
 	public CameraService releaseCamera() {
 		checkClosed();
 		return this;
 	}
 
+	@Override
 	public Map<String, CameraConfigEntryBean> getConfigAsMap() {
 		final List<CameraConfigEntryBean> config = this.getConfig();
 		final Map<String, CameraConfigEntryBean> configMap = new TreeMap<String, CameraConfigEntryBean>();
@@ -233,19 +252,28 @@ public class MockCameraServiceImpl implements CameraService {
 		return configMap;
 	}
 
+	@Override
 	public byte[] fileGetThumb(String filePath, String fileName) {
 		return fileGetContents(filePath, fileName);
 	}
 
+	@Override
 	public String downloadFile(String cameraFilePath, String cameraFileName, File downloadFolderPath) {
 		return "Ok";
 	}
 
+	@Override
 	public String downloadFile(String cameraFilePath, String cameraFileName, File downloadFolderPath, String downloadFileName) {
 		return "Ok";
 	}
 
+	@Override
 	public CameraProvider getCameraProvider() {
 		return cameraProviderMock;
+	}
+
+	@Override
+	public void setImageForLiveView(String imageFilePath) {
+		throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
 	}
 }

@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import x.leBellier.photobooth.BeanSession;
 import x.mvmn.gp2srv.GPhoto2Server;
+import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.log.api.Logger;
 
 public final class LiveViewServlet extends HttpServlet {
@@ -47,10 +48,11 @@ public final class LiveViewServlet extends HttpServlet {
 		response.setContentType("multipart/x-mixed-replace; boundary=--BoundaryString");
 		final OutputStream outputStream = response.getOutputStream();
 		byte[] jpeg;
+		CameraService cameraService = BeanSession.getInstance().getCameraService();
 		while (GPhoto2Server.liveViewEnabled.get()) {
 			try {
 				GPhoto2Server.liveViewInProgress.set(true);
-				jpeg = BeanSession.getInstance().getCameraService().capturePreview();
+				jpeg = cameraService.capturePreview();
 				outputStream.write(PREFIX);
 				outputStream.write(String.valueOf(jpeg.length).getBytes("UTF-8"));
 				outputStream.write(SEPARATOR);
@@ -59,6 +61,10 @@ public final class LiveViewServlet extends HttpServlet {
 				outputStream.flush();
 				System.gc();
 				Thread.yield();
+
+				if (cameraService.isSlowRefresh()) {
+					Thread.sleep(3000);
+				}
 			} catch (final EOFException e) {
 				logger.error("This just means user closed preview: " + e.getClass().getName() + " " + e.getMessage());
 				break;
@@ -67,10 +73,9 @@ public final class LiveViewServlet extends HttpServlet {
 				logger.error("Live view stopped: " + e.getClass().getName() + " " + e.getMessage());
 				break;
 			} finally {
-
 				GPhoto2Server.liveViewInProgress.set(false);
 			}
 		}
-		BeanSession.getInstance().getCameraService().releaseCamera();
+		cameraService.releaseCamera();
 	}
 }
