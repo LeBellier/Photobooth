@@ -4,8 +4,6 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
-import java.util.Observable;
-import java.util.Observer;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -14,7 +12,7 @@ import x.leBellier.photobooth.BeanSession;
 import x.mvmn.gp2srv.GPhoto2Server;
 import x.mvmn.log.api.Logger;
 
-public final class LiveViewServlet extends HttpServlet implements Observer {
+public final class LiveViewServlet extends HttpServlet {
 
 	private static final byte[] PREFIX;
 	private static final byte[] SEPARATOR;
@@ -35,8 +33,6 @@ public final class LiveViewServlet extends HttpServlet implements Observer {
 	private static final long serialVersionUID = -6610127379314108183L;
 	private static final Logger logger = BeanSession.getInstance().getLogger();
 
-	private String staticPreviewFilePath = "";
-
 	public LiveViewServlet() {
 	}
 
@@ -54,7 +50,7 @@ public final class LiveViewServlet extends HttpServlet implements Observer {
 		while (GPhoto2Server.liveViewEnabled.get()) {
 			try {
 				GPhoto2Server.liveViewInProgress.set(true);
-				jpeg = BeanSession.getInstance().getCameraService().capturePreview(staticPreviewFilePath);
+				jpeg = BeanSession.getInstance().getCameraService().capturePreview();
 				outputStream.write(PREFIX);
 				outputStream.write(String.valueOf(jpeg.length).getBytes("UTF-8"));
 				outputStream.write(SEPARATOR);
@@ -76,9 +72,5 @@ public final class LiveViewServlet extends HttpServlet implements Observer {
 			}
 		}
 		BeanSession.getInstance().getCameraService().releaseCamera();
-	}
-
-	public void update(Observable o, Object o1) {
-		staticPreviewFilePath = (String) o1;
 	}
 }

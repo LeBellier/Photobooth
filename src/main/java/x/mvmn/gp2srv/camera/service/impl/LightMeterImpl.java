@@ -3,9 +3,7 @@ package x.mvmn.gp2srv.camera.service.impl;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-
 import javax.imageio.ImageIO;
-
 import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.log.api.Logger;
 import x.mvmn.util.ImageUtil;
@@ -42,7 +40,7 @@ public class LightMeterImpl {
 
 	public double getForPreview() {
 		try {
-			return doCalc(cameraService.capturePreview(null));
+			return doCalc(cameraService.capturePreview());
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to get image brightness for preview image.", e);
 		}

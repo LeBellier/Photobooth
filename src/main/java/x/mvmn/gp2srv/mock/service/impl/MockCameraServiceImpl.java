@@ -56,7 +56,7 @@ public class MockCameraServiceImpl implements CameraService {
 			final Map<String, CameraConfigEntryBean> mockConfig = new Gson().fromJson(
 					IOUtils.toString(this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/config.json")),
 					new TypeToken<Map<String, CameraConfigEntryBean>>() {
-			}.getType());
+					}.getType());
 			initialConfig = Collections.unmodifiableMap(mockConfig);
 			mockPicture = IOUtils.toByteArray(this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/picture.jpg"));
 			reset();
@@ -94,7 +94,7 @@ public class MockCameraServiceImpl implements CameraService {
 		this.closed = true;
 	}
 
-	public byte[] capturePreview(String staticViewFilePath) {
+	public byte[] capturePreview() {
 		checkClosed();
 
 		byte[] result = mockPicture;
@@ -119,7 +119,7 @@ public class MockCameraServiceImpl implements CameraService {
 
 	public byte[] fileGetContents(String filePath, String fileName) {
 		checkFileExists(filePath, fileName);
-		return capturePreview(null);
+		return capturePreview();
 	}
 
 	public CameraFileSystemEntryBean capture() {

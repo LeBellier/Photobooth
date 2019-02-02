@@ -12,7 +12,7 @@ public interface CameraService {
 
 	public void close();
 
-	public byte[] capturePreview(String staticViewFilePath);
+	public byte[] capturePreview();
 
 	public CameraService releaseCamera();
 

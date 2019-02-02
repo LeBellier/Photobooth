@@ -1,12 +1,13 @@
 package x.mvmn.gp2srv.camera.service.impl;
 
-import java.awt.image.DataBufferByte;
 import java.io.*;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.TreeMap;
-import javax.imageio.*;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.io.IOUtils;
+import x.leBellier.photobooth.BeanSession;
 import x.mvmn.gp2srv.camera.CameraProvider;
 import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.jlibgphoto2.api.CameraConfigEntryBean;
@@ -17,6 +18,7 @@ import x.mvmn.jlibgphoto2.api.GP2Camera.GP2CameraEventType;
 public class CameraServiceImpl implements CameraService, Closeable {
 
 	private final CameraProvider cameraProvider;
+	protected byte[] mockPicture;
 
 	public CameraServiceImpl(final CameraProvider camera) {
 		this.cameraProvider = camera;
@@ -26,18 +28,9 @@ public class CameraServiceImpl implements CameraService, Closeable {
 		cameraProvider.getCamera().close();
 	}
 
-	public synchronized byte[] capturePreview(String staticViewFilePath) {
-		if (staticViewFilePath != null && !staticViewFilePath.isEmpty()) {
-			try {
-				// open image
-				File imgPath = new File(staticViewFilePath);
-				// get DataBufferBytes from Raster
-				DataBufferByte data = (DataBufferByte) ImageIO.read(imgPath).getRaster().getDataBuffer();
-				return (data.getData());
-
-			} catch (IOException e) {
-				System.out.println("Probleme de chargement du montage");
-			}
+	public synchronized byte[] capturePreview() {
+		if (!Objects.isNull(mockPicture)) {
+			return mockPicture;
 		}
 		return cameraProvider.getCamera().capturePreview();
 	}
@@ -154,13 +147,47 @@ public class CameraServiceImpl implements CameraService, Closeable {
 		return configMap;
 	}
 
-	public byte[] extractBytes(String ImageName) throws IOException {
+	public void extractBytes(String imageFilePath) throws IOException {
+		if (imageFilePath == "null") {
+			mockPicture = null;
+			return;
+		}
+		/*mockPicture = IOUtils.toByteArray(this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/picture.jpg"));
+
 		// open image
-		File imgPath = new File(ImageName);
-
+		File imgPath = new File(imageFilePath);
 		// get DataBufferBytes from Raster
-		DataBufferByte data = (DataBufferByte) ImageIO.read(imgPath).getRaster().getDataBuffer();
+		//DataBufferByte data = (DataBufferByte) ImageIO.read(imgPath).getRaster().getDataBuffer();
+		//mockPicture = (data.getData());
+		FileInputStream fileInputStream = new FileInputStream(imgPath);
+		BeanSession.getInstance().getLogger().trace(fileInputStream.toString());
+		mockPicture = IOUtils.toByteArray(fileInputStream);*/
 
-		return (data.getData());
+		InputStream inputStream = null;
+		try {
+			// open image
+			try {
+				File imgPath = new File(imageFilePath);
+				inputStream = new FileInputStream(imgPath);
+			} catch (Exception e) {
+				BeanSession.getInstance().getLogger().trace("Echec de la vie avec cette image : " + imageFilePath);
+			}
+
+			if (inputStream == null) {
+				inputStream = this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/picture.jpg");
+
+			}
+
+			mockPicture = IOUtils.toByteArray(inputStream);
+			releaseCamera();
+		} catch (Exception ex) {
+			BeanSession.getInstance().getLogger().trace(ex);
+		} finally {
+			try {
+				inputStream.close();
+			} catch (IOException ex) {
+				BeanSession.getInstance().getLogger().trace(ex);
+			}
+		}
 	}
 }

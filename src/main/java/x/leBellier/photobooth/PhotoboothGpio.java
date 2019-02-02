@@ -15,7 +15,7 @@ import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.logging.Level;
+import x.mvmn.gp2srv.camera.service.impl.CameraServiceImpl;
 import x.mvmn.jlibgphoto2.api.CameraFileSystemEntryBean;
 import x.mvmn.jlibgphoto2.exception.GP2CameraBusyException;
 import x.mvmn.log.api.Logger;
@@ -96,7 +96,11 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		int coefDebug = 100;
 		List<String> photoFilenames = new LinkedList<String>();
 		try {
-			int blinking = 1000;
+			//GPhoto2Server.liveViewEnabled.set(false);
+			BeanSession beanSession = BeanSession.getInstance();
+
+			((CameraServiceImpl) beanSession.getCameraService()).extractBytes("");
+			int blinking = 500;
 			while (snap < 4) {
 				logger.debug("pose!");
 				buttonLed.setState(true);
@@ -116,16 +120,17 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 				snap += 1;
 				photoFilenames.add(output);
 			}
-
+			//GPhoto2Server.liveViewEnabled.set(true);
 			// Google Drive uploading #drive = gdrive.authorize_gdrive_api()
 			// gdrive.upload_files_to_gdrive(drive, photo_files)
 			if (EnabedPrinting) {
 				logger.debug("please wait while your photos print...");
 				printLed.setState(false);
-				BeanSession beanSession = BeanSession.getInstance();
 				String path = String.format("%s/Montage%s.jpg", beanSession.getImagesFolder(), BeanSession.getSdf().format(new Date()));
 
 				beanSession.getImageUtils().append4(beanSession.getImagesFolder(), photoFilenames, path);
+
+				((CameraServiceImpl) beanSession.getCameraService()).extractBytes(path);
 
 				logger.debug("Do you want to print ?");
 				iswaitingAck = PrintingState.WaitAck;
@@ -135,6 +140,8 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 					logger.trace("Jattends");
 
 				}
+				((CameraServiceImpl) beanSession.getCameraService()).extractBytes("null");
+
 				if (iswaitingAck == PrintingState.PositiveAck) {
 					beanSession.getImageUtils().printImage(path);
 					logger.trace("Jimprime");
@@ -149,11 +156,9 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 				// TODO: check status of printer instead of using this arbitrary wait time
 			}
 
-		} catch (InterruptedException e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			logger.error(e.getMessage());
-		} catch (IOException ex) {
-			java.util.logging.Logger.getLogger(PhotoboothGpio.class.getName()).log(Level.SEVERE, null, ex);
 		} finally {
 			snippedLed.setState(true);
 			printLed.setState(true);
