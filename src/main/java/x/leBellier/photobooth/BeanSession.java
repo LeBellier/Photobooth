@@ -59,6 +59,19 @@ public class BeanSession implements Provider<TemplateEngine>, CameraProvider {
 	private volatile GP2Camera camera;
 	private CameraService cameraService;
 
+	private PhotoboothGpio gpio;
+
+	public PhotoboothGpio getGpio() {
+		if (gpio == null) {
+			gpio = new PhotoboothGpio();
+		}
+		return gpio;
+	}
+
+	public void setGpio(PhotoboothGpio gpio) {
+		this.gpio = gpio;
+	}
+
 	private static final DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HHmmss");
 
 	public ImageUtils getImageUtils() {

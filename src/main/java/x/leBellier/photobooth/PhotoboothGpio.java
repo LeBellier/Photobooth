@@ -25,21 +25,22 @@ import x.mvmn.log.api.Logger;
  */
 public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 
+	protected final Logger logger;
 	protected final GpioController gpio;
 	protected final GpioPinDigitalOutput printLed;
 	protected final GpioPinDigitalOutput buttonLed;
 	protected final GpioPinDigitalOutput snippedLed;
 	protected final GpioPinDigitalInput btnSnip;
 	protected final GpioPinDigitalInput btnReset;
-	protected final boolean EnabedPrinting = true;
 
-	private Logger logger = BeanSession.getInstance().getLogger();
+	protected final boolean EnabedPrinting = true;
 
 	private boolean goScript = false;
 	private boolean isScriptRunning = false;
 	private PrintingState iswaitingAck = PrintingState.NotNeeded;
 
 	public PhotoboothGpio() {
+		logger = BeanSession.getInstance().getLogger();
 		// create gpio controller
 		gpio = GpioFactory.getInstance();
 
@@ -59,8 +60,6 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 	public void run() {
 		// keep program running until user aborts (CTRL-C)
 		try {
-			logger = BeanSession.getInstance().getLogger();
-
 			logger.debug("Press enter to snap :p");
 			while (true) {
 

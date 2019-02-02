@@ -8,8 +8,7 @@
 				<div>
 					<input type="checkbox" on-change="setLiveView" />&nbsp;<span class="headline">Live view</span>
 					<input type="button" value="capture + download + delete" class="fullWidth" on-click="doCaptureDldDel" />
-					<input type="button" value="photobooth" class="fullWidth" on-click="runPhotobooth" />
-					<input class="fullWidth {{#if theAutoFocus.intValue == 1}} selectedButton {{/if}}" type="button" value={{theAutoFocus.label}} on-click="@this.fire('handleChange', event, 4, 1)" />
+					<input type="button" value="photobooth" class="fullWidth" on-click="printLast" />
 				</div>
 			</td>
 		</tr>

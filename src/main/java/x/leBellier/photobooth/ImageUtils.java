@@ -10,7 +10,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.text.NumberFormat;
 import java.util.List;
-import java.util.Observable;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.imageio.ImageIO;
@@ -19,7 +18,9 @@ import javax.imageio.ImageIO;
  *
  * @author Bruno
  */
-public class ImageUtils extends Observable {
+public class ImageUtils {
+
+	private String assemblyFilePath = "";
 
 	/**
 	 * Append 4 images.
@@ -37,7 +38,7 @@ public class ImageUtils extends Observable {
 		BufferedImage image = appendV(imageHaut, imageBasse);
 
 		ImageIO.write(image, "JPEG", new File(outFilePath));
-		notifyObservers(outFilePath);
+		assemblyFilePath = outFilePath;
 	}
 
 	/**
@@ -140,6 +141,10 @@ public class ImageUtils extends Observable {
 		System.out.println(sb.toString());
 	}
 
+	public void printLastAssembly() {
+		printImage(assemblyFilePath);
+	}
+
 	public void printImage(String filename) {
 		try {
 			ProcessBuilder processBuilder = new ProcessBuilder();
@@ -155,9 +160,10 @@ public class ImageUtils extends Observable {
 			}
 
 			int exitVal = process.waitFor();
+			System.out.println(output);
 			if (exitVal == 0) {
 				System.out.println("Success!");
-				System.out.println(output);
+
 			}
 		} catch (Exception ex) {
 			Logger.getLogger(ImageUtils.class.getName()).log(Level.SEVERE, null, ex);

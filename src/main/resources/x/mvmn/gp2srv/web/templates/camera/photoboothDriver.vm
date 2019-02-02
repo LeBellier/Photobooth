@@ -42,11 +42,11 @@
 						restartLiveView();
 					});
 				},
-				runPhotobooth: function(event) {
+				printLast: function(event) {
 					var captureButton = event.node;
 					captureButton.disabled = true;
 					$.ajax({
-						url: '$!{request.contextPath}/runPhotobooth',
+						url: '$!{request.contextPath}/printLast',
 						method: 'POST'
 					}).fail(function(jqXHR, textStatus) {
 						captureButton.disabled = false;
