@@ -1,154 +1,61 @@
 #parse("camera/head.vm")
+
+
 <script>
-	function restartLiveView() {
-		$("#liveViewContainer img").each(function (idx, el) {
-			el.src='$!{request.contextPath}/stream.mjpeg?t=' + Date.now();
-		});
+	function setLiveView() {
+		var node = document.getElementById('liveChecked');
+
+		if(node.checked) {
+			$("#liveViewContainer").show();
+			$("#liveViewContainer").html('<img class="fullHeight" src="$!{request.contextPath}/stream.mjpeg?t=' + Date.now() + '" />');
+		} else {
+			$("#liveViewContainer").hide();
+			$("#liveViewContainer img").attr("src", "");
+		}
 	}
 
-    function reReadConfig() {
-		getJson("$!{request.contextPath}/cameraConfig.json?reRead=true", function(config) {
-			console.log(config);
-			$("#section_camera").html('');
+	function myFunction() {
+		var x = "Total Height: " + screen.height + "px";
+		document.getElementById("demo").innerHTML = x;
+	}
+	function myFunction2() {
+		var y = "Total Height: " +  document.getElementById('demo2').offsetWidth + "px";
+		document.getElementById("demo").innerHTML = y;
+	}
 
-			var entries = [];
-			var theAutoFocus = 0
-			for(var confPath in config) {
-				var confEntry = config[confPath];
-				if (confEntry.id == 4){
-					theAutoFocus = confEntry;
-				}
-				entries.push({confEntry: confEntry, favInProgress: false, favError: false});
-			}
-			var ractive = new Ractive({
-				el: '#section_camera',
-				template: '#tplLiveStream',
-				data: {theAutoFocus: theAutoFocus, showFavToggle: true, contextPath:"$!{request.contextPath}"}
+	$(document).ready(function(){
+		$("#demo2").click(function(){
+
+			var txt = "BtnWidth: " +  this.offsetWidth + "px" + "Total Screen Height: " + screen.height + "px";
+			document.getElementById("demo").innerHTML = txt;
+			$.post("$!{request.contextPath}/printLast", function(result){
+				$("demo").html(result);
 			});
-			ractive.on({
-				doCaptureDldDel: function(event) {
-					var captureButton = event.node;
-					captureButton.disabled = true;
-					$.ajax({
-						url: '$!{request.contextPath}/capture_dld_del',
-						method: 'POST'
-					}).fail(function(jqXHR, textStatus) {
-						captureButton.disabled = false;
-						console.log(jqXHR);
-						alert("Error occurred: "+textStatus);
-						restartLiveView();
-					}).done(function() {
-						captureButton.disabled = false;
-						restartLiveView();
-					});
-				},
-				printLast: function(event) {
-					var captureButton = event.node;
-					captureButton.disabled = true;
-					$.ajax({
-						url: '$!{request.contextPath}/printLast',
-						method: 'POST'
-					}).fail(function(jqXHR, textStatus) {
-						captureButton.disabled = false;
-						console.log(jqXHR);
-						alert("Error occurred: "+textStatus);
-						restartLiveView();
-					}).done(function() {
-						captureButton.disabled = false;
-						restartLiveView();
-					});
-				},
-				toggleLiveView: function(event) {
-					$(event.node).parent().find("input").click();
-				},
-				setLiveView: function(event) {
-					if(event.node.checked) {
-						$("#liveViewContainer").show();
-						$("#liveViewContainer").html('<img class="fullWidth" src="$!{request.contextPath}/stream.mjpeg?t=' + Date.now() + '" />');
-					} else {
-						$("#liveViewContainer").hide();
-						$("#liveViewContainer img").attr("src", "");
-					}
-				},
-				handleChange: function(event, entryIndex, val) {
-					var ractive = this;
-					var allEntries = this.get("entries");
-					var entry = allEntries[entryIndex];
-					var confEntry = entry.confEntry;
-					if(confEntry.type.toString().toLowerCase() == "toggle" && val && val == confEntry.intValue) {
-						val = 0;
-					}
-					if(val === undefined) {
-						if(confEntry.intValue === 0) {
-							val = 0;
-						} else {
-							val = confEntry.intValue || confEntry.strValue || confEntry.floatValue;
-						}
-					}
-					if(confEntry.valueType == "INT") {
-						confEntry.intValue = val;
-					} else if(confEntry.valueType == "FLOAT") {
-						confEntry.floatValue = val;
-					} else if(confEntry.valueType == "STRING") {
-						confEntry.strValue = val;
-					}
-					var url = "$!{request.contextPath}/allsettingset";
-					entry.setError = false;
-					entry.setInProgress = true;
-					ractive.update("entries");
-
-					$.ajax({
-						method: "POST",
-						cache: false,
-						url: url,
-						data: {
-							type: confEntry.type,
-							key: confEntry.path,
-							value: val
-						}
-					}).fail(function(jqXHR, textStatus) {
-						entry.setInProgress = false;
-						entry.setError = true;
-						console.log("Error " + jqXHR.status + " on setting faved status for camera config entry: " + jqXHR.statusText);
-						ractive.update("entries");
-						restartLiveView();
-					}).done(function(data) {
-						entry.setInProgress = false;
-						allEntries[entryIndex].confEntry = data;
-						ractive.update("entries");
-						restartLiveView();
-					});
-				},
-			});
-		}, function(textStatus) { alert('Error loading config: '+textStatus) });
-	}
-
-	function initUi() {
-		var helpers = Ractive.defaults.data;
-		helpers.lowercase = function(str) { return str? str.toLowerCase() : str };
-		helpers.uppercase = function(str) { return str? str.toUpperCase() : str };
-
-		reReadConfig();
-	}
-
-	function getJson(url, successCallback, errorCallback) {
-		$.ajax({
-			cache: false,
-			url: url
-		}).done(function(data) {
-			successCallback(data);
-		}).fail(function(jqXHR, textStatus) {
-			console.error("Error obtaining JSON from "+url+". " + textStatus);
-			if(errorCallback) {
-				errorCallback(textStatus);
-			}
 		});
-	}
-	$(document).ready(initUi);
+		$("#printer").click(function(){
+			$.post("$!{request.contextPath}/printLast", function(result){
+				$("demo").html(result);
+			});
+		});
+		$("#liveChecked").click(function(){setLiveView();});
+		document.getElementById('liveChecked').checked=true;
+		setLiveView();
+		$("#colDev").hide();
+
+	});
+
+
+
 </script>
-<script type="text/ractive" id="tplLiveStream">
-	#include("camera/liveStream.ractive")
-</script>
-<div class="fullWidth" id="section_camera">
+<div class="row fullWidth fullHeight overflow" id="section_camera">
+	<div class="column" id="liveViewContainer" style="display: none">
+	</div>
+	<div class="column" id="colDev" style="display: none">
+		<input type="checkbox" id="liveChecked" />&nbsp;<span class="headline">Live view</span>
+		<input type="button" id="printer" value="Imprimer le dernier montage" class="fullWidth" />
+		<p>Click the button to display the total height of your screen, in pixels.</p>
+		<input type="button" id="demo2" value="Try it"  />
+		<p id="demo"></p>
+	</div>
 </div>
 #parse("camera/foot.vm")
