@@ -44,7 +44,40 @@ public class ImageUtilsTest {
 			BufferedImage imgRef = beanSession.getImageUtils().readPhotoFile(imageDldFolder, "Montage.jpg");
 			Assert.assertTrue(compareImages(imgRes, imgRef));
 
-			new File(imageDldFolder, String.format("Montage%s.jpg", date)).delete();
+			//new File(imageDldFolder, String.format("Montage%s.jpg", date)).delete();
+		} catch (IOException ex) {
+			Logger.getLogger(ImageUtilsTest.class.getName()).log(Level.SEVERE, null, ex);
+			Assert.assertNull(ex);
+		}
+	}
+
+	@Test
+	public void testExecutionMariage() {
+		System.out.println("Test is running");
+		BeanSession beanSession = BeanSession.getInstance();
+		List<String> photoFilenames = new LinkedList<String>();
+		photoFilenames.add("capt0001.jpg");
+		photoFilenames.add("capt0002.jpg");
+		photoFilenames.add("capt0003.jpg");
+		photoFilenames.add("capt0004.jpg");
+
+		try {
+			//Get folder path from resources folder
+			ClassLoader classLoader = getClass().getClassLoader();
+
+			File file = new File(classLoader.getResource("x/leBellier/photobooth/capt0001.jpg").getFile());
+			beanSession.setImagesFolder(file.getParent());
+			File imageDldFolder = file.getParentFile();
+			String date = sdf.format(new Date());
+			String path = String.format("%s/Montage%s.jpg", imageDldFolder, date);
+
+			beanSession.getImageUtils().append4mariage(BeanSession.getInstance().getImagesFolder(), photoFilenames, path);
+
+			BufferedImage imgRes = beanSession.getImageUtils().readPhotoFile(imageDldFolder, String.format("Montage%s.jpg", date));
+			BufferedImage imgRef = beanSession.getImageUtils().readPhotoFile(imageDldFolder, "MontageMariage.jpg");
+			Assert.assertTrue(compareImages(imgRes, imgRef));
+
+			//new File(imageDldFolder, String.format("Montage%s.jpg", date)).delete();
 		} catch (IOException ex) {
 			Logger.getLogger(ImageUtilsTest.class.getName()).log(Level.SEVERE, null, ex);
 			Assert.assertNull(ex);
