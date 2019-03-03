@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.apache.velocity.context.Context;
 import x.leBellier.photobooth.BeanSession;
 import x.mvmn.gp2srv.GPhoto2Server;
-import x.mvmn.gp2srv.camera.CameraProvider;
 import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.jlibgphoto2.api.CameraConfigEntryBean;
 import x.mvmn.jlibgphoto2.api.CameraConfigEntryBean.CameraConfigEntryType;
@@ -23,6 +22,7 @@ public class CameraControlServlet extends AbstractGP2Servlet {
 	private static final long serialVersionUID = 7389681375772493366L;
 
 	protected final Properties favouredCamConfSettings;
+	private final BeanSession beanSession = BeanSession.getInstance();
 
 	public CameraControlServlet(final Properties favouredCamConfSettings) {
 		super();
@@ -33,7 +33,7 @@ public class CameraControlServlet extends AbstractGP2Servlet {
 	public void doPost(final HttpServletRequest request, final HttpServletResponse response) {
 		final String requestPath = request.getServletPath() + (request.getPathInfo() != null ? request.getPathInfo() : "");
 		try {
-			CameraService cameraService = BeanSession.getInstance().getCameraService();
+			CameraService cameraService = beanSession.getCameraService();
 
 			GPhoto2Server.liveViewEnabled.set(false);
 			GPhoto2Server.waitWhileLiveViewInProgress(50);
@@ -86,20 +86,20 @@ public class CameraControlServlet extends AbstractGP2Servlet {
 				serveJson(Boolean.TRUE, response);
 			} else if ("/capture_dld_del".equals(requestPath)) {
 				CameraFileSystemEntryBean cfseb = cameraService.capture();
-				cameraService.downloadFile(cfseb.getPath(), cfseb.getName(), BeanSession.getInstance().getImagesFolder());
+				cameraService.downloadFile(cfseb.getPath(), cfseb.getName(), beanSession.getImagesFolder());
 				cameraService.fileDelete(cfseb.getPath(), cfseb.getName());
 
 				serveJson(Boolean.TRUE, response);
 			} else if ("/printLast".equals(requestPath)) {
 				logger.trace("J'imprime la dernière photo");
-				BeanSession.getInstance().getImageUtils().printLastAssembly();
+				beanSession.getImageUtils().printLastAssembly();
 
 				serveJson(Boolean.TRUE, response);
 			} else if ("/downloadcamfile".equals(requestPath)) {
 				final String fileName = request.getParameter("name");
 				final String filePath = request.getParameter("folder");
 
-				String result = cameraService.downloadFile(filePath, fileName, BeanSession.getInstance().getImagesFolder());
+				String result = cameraService.downloadFile(filePath, fileName, beanSession.getImagesFolder());
 				response.setStatus(result.equalsIgnoreCase("ok") ? HttpServletResponse.SC_OK : HttpServletResponse.SC_INTERNAL_SERVER_ERROR);
 				serveJson(result, response);
 			} else {
@@ -135,12 +135,11 @@ public class CameraControlServlet extends AbstractGP2Servlet {
 			} else if (requestPath.equals("/photoboothDriver")) {
 				serveTempalteUTF8Safely("camera/photoboothDriver.vm", velocityContext, response, logger);
 			} else if ("/camdisconnect".equals(requestPath)) {
-				final CameraProvider camProvider = BeanSession.getInstance();
-				if (camProvider.getCamera() != null) {
-					synchronized (camProvider) {
-						if (camProvider.getCamera() != null) {
-							camProvider.getCamera().close();
-							camProvider.setCamera(null);
+				if (beanSession.getCamera() != null) {
+					synchronized (beanSession) {
+						if (beanSession.getCamera() != null) {
+							beanSession.getCamera().close();
+							beanSession.setCamera(null);
 						}
 					}
 				}

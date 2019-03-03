@@ -84,7 +84,7 @@ public final class Snippet {
 				}
 			}
 
-			beanSession.setCameraService(commandLine.hasOption("usemocks"));
+			beanSession.setUseMock(commandLine.hasOption("usemocks"));
 
 			LauncherBean bean = new LauncherBean();
 			bean.auth = auth;

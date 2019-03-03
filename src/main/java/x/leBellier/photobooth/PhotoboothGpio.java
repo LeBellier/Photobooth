@@ -110,7 +110,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 
 				// take photo and save with gphoto2
 				Date date = new Date();
-				String output = String.format("photobooth%s.jpg", BeanSession.getSdf().format(date));
+				String output = String.format("photobooth%s.jpg", beanSession.getSdf().format(date));
 				captureDownload(output);
 				snippedLed.setState(true);
 
@@ -124,7 +124,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 			if (EnabedPrinting) {
 				logger.debug("please wait while your photos print...");
 				printLed.setState(false);
-				String path = String.format("%s/Montage%s.jpg", beanSession.getImagesFolder(), BeanSession.getSdf().format(new Date()));
+				String path = String.format("%s/Montage%s.jpg", beanSession.getImagesFolder(), beanSession.getSdf().format(new Date()));
 
 				beanSession.getImageUtils().append4(beanSession.getImagesFolder(), photoFilenames, path);
 

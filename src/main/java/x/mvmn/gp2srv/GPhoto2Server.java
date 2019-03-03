@@ -1,13 +1,9 @@
 package x.mvmn.gp2srv;
 
 import java.io.File;
-import java.io.IOException;
 import java.io.Writer;
 import java.util.EnumSet;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 import javax.servlet.DispatcherType;
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +15,6 @@ import org.eclipse.jetty.servlet.ServletHolder;
 import x.leBellier.photobooth.BeanSession;
 import x.mvmn.gp2srv.scripting.service.impl.ScriptExecutionServiceImpl;
 import x.mvmn.gp2srv.scripting.service.impl.ScriptsManagementServiceImpl;
-import x.mvmn.gp2srv.web.service.velocity.TemplateEngine;
 import x.mvmn.gp2srv.web.servlets.AbstractErrorHandlingServlet;
 import x.mvmn.gp2srv.web.servlets.BasicAuthFilter;
 import x.mvmn.gp2srv.web.servlets.CameraChoiceFilter;
@@ -81,7 +76,7 @@ public class GPhoto2Server {
 			logger.info("Arguments are : " + port.toString() + ", " + logger.getLevel().toString() + ", "
 					+ requireAuthCredentials + ", " + beanSession.getImagesFolder().getAbsolutePath());
 
-			beanSession.setTemplateEngine(makeTemplateEngine());
+			beanSession.setTemplateEngine();
 
 			this.server = new Server(port);
 			this.server.setStopAtShutdown(true);
@@ -145,35 +140,13 @@ public class GPhoto2Server {
 					beanSession.setCamera(new GP2CameraImpl(gp2PortInfo));
 					logger.info("A camera is found  ! :) I connect the " + list.get(0).getCameraModel());
 				} else {
-					logger.info("No camer is connected :( ");
+					logger.info("No camera is connected :( ");
 				}
 			}
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 		logger.info("Initializing: done.");
-	}
-
-	public void reReadTemplates() {
-		try {
-			BeanSession.getInstance().setTemplateEngine(makeTemplateEngine());
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	protected TemplateEngine makeTemplateEngine() throws IOException {
-		final Map<String, String> templatesRegistrations = new HashMap<String, String>();
-		{
-			final Properties templatesListProps = new Properties();
-			templatesListProps.load(GPhoto2Server.class.getResourceAsStream(
-					TemplateEngine.DEFAULT_TEMPLATES_CLASSPATH_PREFIX + "templates_list.properties"));
-			for (Object templateNameObj : templatesListProps.keySet()) {
-				String key = templateNameObj.toString();
-				templatesRegistrations.put(key, templatesListProps.getProperty(key));
-			}
-		}
-		return new TemplateEngine(templatesRegistrations);
 	}
 
 	public static void waitWhileLiveViewInProgress(int waitTime) {

@@ -1,13 +1,13 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package x.leBellier.photobooth;
 
 import java.io.File;
+import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Properties;
+import x.mvmn.gp2srv.GPhoto2Server;
 import x.mvmn.gp2srv.camera.CameraProvider;
 import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.gp2srv.camera.service.impl.CameraServiceImpl;
@@ -25,18 +25,6 @@ import x.mvmn.log.api.Logger;
  */
 public class BeanSession implements Provider<TemplateEngine>, CameraProvider {
 
-	// Constructeur privé
-	private BeanSession() {
-		logger = new PrintStreamLogger(System.out);
-
-		userHome = new File(System.getProperty("user.home"));
-		appHomeFolder = new File(userHome, ".gp2srv");
-		appHomeFolder.mkdir();
-
-		velocityContextService = new VelocityContextService();
-
-	}
-
 	//Instance unique pré-initialisée
 	private static BeanSession INSTANCE = new BeanSession();
 
@@ -46,33 +34,39 @@ public class BeanSession implements Provider<TemplateEngine>, CameraProvider {
 	public static synchronized BeanSession getInstance() {
 		return INSTANCE;
 	}
-
-	private final ImageUtils imageUtils = new ImageUtils();
+	private final DateFormat sdf;
+	private final ImageUtils imageUtils;
 	private final Logger logger;
 	private final File userHome;
 	private final File appHomeFolder;
-	private File imagesFolder;
+	private final VelocityContextService velocityContextService;
 
 	private volatile TemplateEngine templateEngine;
-	private final VelocityContextService velocityContextService;
 
 	private volatile GP2Camera camera;
 	private CameraService cameraService;
 
-	private PhotoboothGpio gpio;
+	private PhotoboothGpio gpio;  // Singleton
+	private File imagesFolder;	// Final
 
-	public PhotoboothGpio getGpio() {
-		if (gpio == null) {
-			gpio = new PhotoboothGpio();
-		}
-		return gpio;
+	private boolean usemocks = false;
+
+	// Constructeur privé
+	private BeanSession() {
+		sdf = new SimpleDateFormat("yyyy-MM-dd_HHmmss");
+		imageUtils = new ImageUtils();
+		logger = new PrintStreamLogger(System.out);
+
+		userHome = new File(System.getProperty("user.home"));
+		appHomeFolder = new File(userHome, ".gp2srv");
+		appHomeFolder.mkdir();
+
+		velocityContextService = new VelocityContextService();
 	}
 
-	public void setGpio(PhotoboothGpio gpio) {
-		this.gpio = gpio;
+	public DateFormat getSdf() {
+		return sdf;
 	}
-
-	private static final DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HHmmss");
 
 	public ImageUtils getImageUtils() {
 		return imageUtils;
@@ -88,6 +82,23 @@ public class BeanSession implements Provider<TemplateEngine>, CameraProvider {
 
 	public File getAppHomeFolder() {
 		return appHomeFolder;
+	}
+
+	public VelocityContextService getVelocityContextService() {
+		return velocityContextService;
+	}
+
+	public PhotoboothGpio getGpio() {
+		if (gpio == null) { // singleton
+			gpio = new PhotoboothGpio();
+		}
+		return gpio;
+	}
+
+	public void setGpio(PhotoboothGpio gpio) {
+		if (gpio == null) { // final
+			this.gpio = gpio;
+		}
 	}
 
 	public File getImagesFolder() {
@@ -109,49 +120,69 @@ public class BeanSession implements Provider<TemplateEngine>, CameraProvider {
 		}
 	}
 
-	public VelocityContextService getVelocityContextService() {
-		return velocityContextService;
-	}
-
 	public TemplateEngine getTemplateEngine() {
 		return templateEngine;
 	}
 
-	public void setTemplateEngine(TemplateEngine templateEngine) {
-		this.templateEngine = templateEngine;
+	public void setTemplateEngine() {
+		try {
+			final Map<String, String> templatesRegistrations = new HashMap<String, String>();
+			{
+				final Properties templatesListProps = new Properties();
+				templatesListProps.load(GPhoto2Server.class.getResourceAsStream(
+						TemplateEngine.DEFAULT_TEMPLATES_CLASSPATH_PREFIX + "templates_list.properties"));
+				for (Object templateNameObj : templatesListProps.keySet()) {
+					String key = templateNameObj.toString();
+					templatesRegistrations.put(key, templatesListProps.getProperty(key));
+				}
+				this.templateEngine = new TemplateEngine(templatesRegistrations);
+			}
+		} catch (IOException e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	public CameraService getCameraService() {
 		return cameraService;
 	}
 
-	public void setCameraService(Boolean usemocks) {
-		if (cameraService != null) { // final set
-			return;
-		}
-		if (usemocks) {
-			cameraService = new MockCameraServiceImpl();
-		} else {
-			cameraService = new CameraServiceImpl(this);
+	public void setUseMock(Boolean usemocks) {
+		if (cameraService == null) { // final set
+			this.usemocks = usemocks;
+			if (usemocks) {
+				cameraService = new MockCameraServiceImpl(this);
+			} else {
+				cameraService = new CameraServiceImpl(this);
+			}
 		}
 	}
 
+	@Override
 	public GP2Camera getCamera() {
-		return camera;
+		if (usemocks) {
+			return null;
+		} else {
+			return camera;
+		}
 	}
 
+	@Override
 	public void setCamera(GP2Camera camera) {
-		this.camera = camera;
+		if (!usemocks) {
+			this.camera = camera;
+		}
 	}
 
+	@Override
 	public boolean hasCamera() {
-		return camera != null;
+		if (usemocks) {
+			return true;
+		} else {
+			return camera != null;
+		}
 	}
 
-	public static DateFormat getSdf() {
-		return sdf;
-	}
-
+	@Override
 	public TemplateEngine provide() {
 		return templateEngine;
 	}

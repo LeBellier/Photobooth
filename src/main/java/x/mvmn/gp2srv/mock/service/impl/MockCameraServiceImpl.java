@@ -40,25 +40,33 @@ public class MockCameraServiceImpl implements CameraService {
 	protected final CameraProvider cameraProviderMock;
 
 	public MockCameraServiceImpl() {
-		cameraProviderMock = new CameraProvider() {
+		this(new CameraProvider() {
+			@Override
 			public void setCamera(GP2Camera camera) {
 			}
 
+			@Override
 			public boolean hasCamera() {
 				return true;
 			}
 
+			@Override
 			public GP2Camera getCamera() {
 				return null;
 			}
-		};
+		}
+		);
+	}
+
+	public MockCameraServiceImpl(CameraProvider camera) {
+		this.cameraProviderMock = camera;
 		try {
 			final Map<String, CameraConfigEntryBean> mockConfig = new Gson().fromJson(
 					IOUtils.toString(this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/config.json")),
 					new TypeToken<Map<String, CameraConfigEntryBean>>() {
 					}.getType());
 			initialConfig = Collections.unmodifiableMap(mockConfig);
-			mockPicture = IOUtils.toByteArray(this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/picture.jpg"));
+			mockPicture = IOUtils.toByteArray(this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/picture1.jpg"));
 			reset();
 		} catch (Exception e) {
 			throw new RuntimeException("Failed to set-up mock camera service", e);

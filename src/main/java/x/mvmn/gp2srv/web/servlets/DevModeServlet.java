@@ -4,6 +4,7 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.apache.velocity.context.Context;
+import x.leBellier.photobooth.BeanSession;
 import x.mvmn.gp2srv.GPhoto2Server;
 
 public class DevModeServlet extends AbstractErrorHandlingServlet {
@@ -21,7 +22,7 @@ public class DevModeServlet extends AbstractErrorHandlingServlet {
 	public void doGet(final HttpServletRequest request, final HttpServletResponse response) {
 		final Context context = createContext(request, response);
 		if ("/rst".equals(request.getPathInfo())) {
-			gPhoto2Server.reReadTemplates();
+			BeanSession.getInstance().setTemplateEngine();
 			try {
 				response.sendRedirect(request.getContextPath() + "/devmode");
 			} catch (IOException e) {

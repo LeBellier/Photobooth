@@ -14,12 +14,15 @@ import x.mvmn.jlibgphoto2.api.CameraConfigEntryBean;
 import x.mvmn.jlibgphoto2.api.CameraFileSystemEntryBean;
 import x.mvmn.jlibgphoto2.api.GP2Camera.GP2CameraCaptureType;
 import x.mvmn.jlibgphoto2.api.GP2Camera.GP2CameraEventType;
+import x.mvmn.log.api.Logger;
 
 public class CameraServiceImpl implements CameraService, Closeable {
 
 	private final CameraProvider cameraProvider;
 	protected byte[] mockPicture;
 	private int haveSendMock;
+
+	private static final Logger logger = BeanSession.getInstance().getLogger();
 
 	public CameraServiceImpl(final CameraProvider camera) {
 		this.cameraProvider = camera;
@@ -193,29 +196,29 @@ public class CameraServiceImpl implements CameraService, Closeable {
 					File imgPath = new File(imageFilePath);
 					inputStream = new FileInputStream(imgPath);
 				} catch (Exception e) {
-					BeanSession.getInstance().getLogger().trace("Echec de la vie avec cette image : " + imageFilePath);
+					logger.trace("Echec de la vie avec cette image : " + imageFilePath);
 				}
 
 				if (inputStream == null) {
-					inputStream = this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/picture.jpg");
+					inputStream = this.getClass().getResourceAsStream("/x/mvmn/gp2srv/mock/error.jpg");
 				}
 
 				imageTemp = IOUtils.toByteArray(inputStream);
 				releaseCamera();
 			} catch (Exception ex) {
-				BeanSession.getInstance().getLogger().trace(ex);
+				logger.trace(ex);
 			} finally {
 				try {
 					inputStream.close();
 				} catch (IOException ex) {
-					BeanSession.getInstance().getLogger().trace(ex);
+					logger.trace(ex);
 				}
 			}
 		}
 		if (mockPicture != imageTemp) {
 			mockPicture = imageTemp;
 			haveSendMock = 0;
-			BeanSession.getInstance().getLogger().trace("New picture set : " + imageFilePath);
+			logger.trace("New picture set : " + imageFilePath);
 		}
 	}
 }
