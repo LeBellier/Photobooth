@@ -7,10 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlException;
-
 import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.gp2srv.camera.service.impl.LightMeterImpl;
 import x.mvmn.gp2srv.camera.service.impl.ScriptHelper;
@@ -23,6 +21,7 @@ import x.mvmn.log.api.Logger;
 public class ScriptExecution implements Runnable {
 
 	public static interface ScriptExecutionFinishListener {
+
 		public void onFinish(ScriptExecution scriptExecution);
 	}
 

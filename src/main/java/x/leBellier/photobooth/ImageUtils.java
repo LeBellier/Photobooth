@@ -143,8 +143,7 @@ public class ImageUtils {
 
 	public BufferedImage readPhotoFile(File imageDldFolder, String filename) throws IOException {
 		String photoPath = String.format("%s/%s", imageDldFolder, filename);
-		BufferedImage res = resize(ImageIO.read(new File(photoPath)), 1296, 864);
-		return res;
+		return resize(ImageIO.read(new File(photoPath)), 1296, 864);
 	}
 
 	private void printFreeMemorie() {
@@ -209,7 +208,7 @@ public class ImageUtils {
 		int padding = 50;
 		int imgSize = 910;
 
-		String framePath = imgOutFilename; //String.format("%s/%s", imageDldFolder, imgOutFilename);
+		String framePath = imgOutFilename;
 		BufferedImage frame = ImageIO.read(new File(framePath));
 		String addinPath = String.format("%s/%s", imageDldFolder, imgInFilename);
 		BufferedImage addin = cadrage(ImageIO.read(new File(addinPath)));

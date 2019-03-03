@@ -1,10 +1,8 @@
 package x.mvmn.gp2srv.scripting.model;
 
 import java.io.File;
-
 import org.apache.commons.jexl3.JexlEngine;
 import org.apache.commons.jexl3.JexlExpression;
-
 import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.gp2srv.scripting.service.impl.JexlMapContext;
 import x.mvmn.jlibgphoto2.api.CameraConfigEntryBean;
@@ -103,43 +101,43 @@ public class ScriptStep {
 			break;
 			case EXEC_SCRIPT:
 				engine.createScript(expression).execute(context);
-			break;
+				break;
 			case STOP:
 				result = true;
-			break;
+				break;
 			case CAPTURE:
 				CameraFileSystemEntryBean cfseb = cameraService.capture();
 				context.set("__capturedFile", cfseb.getPath() + (cfseb.getPath().endsWith("/") ? "" : "/") + cfseb.getName());
-			break;
+				break;
 			case DELAY:
 				WaitUtil.ensuredWait(Long.parseLong(evaluatedValueAsString));
-			break;
+				break;
 			case CAMEVENT_WAIT:
 				if (key != null && !key.trim().isEmpty()) {
 					cameraService.waitForSpecificEvent(Integer.parseInt(evaluatedValueAsString), GP2CameraEventType.getByCode(Integer.parseInt(key.trim())));
 				} else {
 					cameraService.waitForEvent(Integer.parseInt(evaluatedValueAsString));
 				}
-			break;
+				break;
 			case VAR_SET:
 				context.set(key, evaluatedValue);
-			break;
+				break;
 			case CAMPROP_SET:
 				if (configEntry != null) {
 					switch (configEntry.getValueType()) {
 						case FLOAT:
 							configEntry = configEntry.cloneWithNewValue(Float.parseFloat(evaluatedValueAsString));
-						break;
+							break;
 						case INT:
 							configEntry = configEntry.cloneWithNewValue(Integer.parseInt(evaluatedValueAsString));
-						break;
+							break;
 						case STRING:
 							configEntry = configEntry.cloneWithNewValue(evaluatedValueAsString);
-						break;
+							break;
 					}
 					cameraService.setConfig(configEntry);
 				}
-			break;
+				break;
 		}
 		return result;
 	}

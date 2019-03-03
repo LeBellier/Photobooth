@@ -1,14 +1,11 @@
 package x.mvmn.gp2srv.web.servlets;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.eclipse.jetty.websocket.api.Session;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import x.mvmn.gp2srv.scripting.model.ScriptExecution;
 import x.mvmn.gp2srv.scripting.service.impl.ScriptExecutionServiceImpl.ScriptExecutionObserver;
 import x.mvmn.log.api.Logger;

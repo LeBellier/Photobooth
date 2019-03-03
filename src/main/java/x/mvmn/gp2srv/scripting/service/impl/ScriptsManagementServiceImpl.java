@@ -1,21 +1,19 @@
 package x.mvmn.gp2srv.scripting.service.impl;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import java.io.File;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
-
 import org.apache.commons.io.FileUtils;
-
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-
 import x.mvmn.gp2srv.scripting.model.ScriptStep;
 import x.mvmn.log.api.Logger;
 
 public class ScriptsManagementServiceImpl {
+
 	private static final FilenameFilter SCRIPT_FILENAME_FILTER = new FilenameFilter() {
 		public boolean accept(final File dir, final String name) {
 			return name.toLowerCase().endsWith(".gp2srv_script");

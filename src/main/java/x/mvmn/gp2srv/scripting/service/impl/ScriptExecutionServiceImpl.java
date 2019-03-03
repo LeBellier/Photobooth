@@ -3,10 +3,8 @@ package x.mvmn.gp2srv.scripting.service.impl;
 import java.io.File;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
-
 import org.apache.commons.jexl3.JexlBuilder;
 import org.apache.commons.jexl3.JexlEngine;
-
 import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.gp2srv.scripting.model.ScriptExecution;
 import x.mvmn.gp2srv.scripting.model.ScriptExecution.ScriptExecutionFinishListener;
@@ -20,6 +18,7 @@ public class ScriptExecutionServiceImpl implements ScriptExecutionFinishListener
 	protected final JexlEngine engine = new JexlBuilder().create();
 
 	public static interface ScriptExecutionObserver {
+
 		public void onStart(ScriptExecution execution);
 
 		public void preStep(ScriptExecution execution);
