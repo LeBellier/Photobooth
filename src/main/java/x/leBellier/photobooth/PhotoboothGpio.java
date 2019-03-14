@@ -126,7 +126,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 				printLed.setState(false);
 				String path = String.format("%s/Montage%s.jpg", beanSession.getImagesFolder(), beanSession.getSdf().format(new Date()));
 
-				beanSession.getImageUtils().append4(beanSession.getImagesFolder(), photoFilenames, path);
+				beanSession.getImageUtils().append4mariage(beanSession.getImagesFolder(), photoFilenames, path);
 
 				beanSession.getCameraService().setImageForLiveView(path);
 

@@ -44,7 +44,7 @@ public class ImageUtilsTest {
 			BufferedImage imgRef = beanSession.getImageUtils().readPhotoFile(imageDldFolder, "Montage.jpg");
 			Assert.assertTrue(compareImages(imgRes, imgRef));
 
-			//new File(imageDldFolder, String.format("Montage%s.jpg", date)).delete();
+			new File(imageDldFolder, String.format("Montage%s.jpg", date)).delete();
 		} catch (IOException ex) {
 			Logger.getLogger(ImageUtilsTest.class.getName()).log(Level.SEVERE, null, ex);
 			Assert.assertNull(ex);
@@ -77,7 +77,7 @@ public class ImageUtilsTest {
 			BufferedImage imgRef = beanSession.getImageUtils().readPhotoFile(imageDldFolder, "MontageMariage.jpg");
 			Assert.assertTrue(compareImages(imgRes, imgRef));
 
-			//new File(imageDldFolder, String.format("Montage%s.jpg", date)).delete();
+			new File(imageDldFolder, String.format("Montage%s.jpg", date)).delete();
 		} catch (IOException ex) {
 			Logger.getLogger(ImageUtilsTest.class.getName()).log(Level.SEVERE, null, ex);
 			Assert.assertNull(ex);

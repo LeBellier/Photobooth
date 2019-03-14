@@ -8,8 +8,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.text.NumberFormat;
 import java.util.List;
 import java.util.logging.Level;
@@ -23,6 +21,11 @@ import javax.imageio.ImageIO;
 public class ImageUtils {
 
 	private String assemblyFilePath = "";
+
+	private int offsety = 49;
+	private int offsetx = 49;
+	private int padding = 50;
+	private int imgSize = 910;
 
 	/**
 	 * Append 4 images.
@@ -53,13 +56,14 @@ public class ImageUtils {
 	 */
 	public void append4mariage(File imagesFolder, List<String> photoFilenames, String outFilePath) throws IOException {
 
-		Files.copy(new File(String.format("%s/%s", imagesFolder, "dessin.png")).toPath(),
-				new File(outFilePath).toPath(), StandardCopyOption.REPLACE_EXISTING);
+		BufferedImage addin = ImageIO.read(new File(String.format("%s/%s", imagesFolder, "dessin.png")));
 
-		writeAt(imagesFolder, outFilePath, photoFilenames.get(0), 0, 0);
-		writeAt(imagesFolder, outFilePath, photoFilenames.get(1), 0, 1);
-		writeAt(imagesFolder, outFilePath, photoFilenames.get(2), 1, 0);
-		writeAt(imagesFolder, outFilePath, photoFilenames.get(3), 1, 1);
+		addin = writeAt(addin, imagesFolder, photoFilenames.get(0), 0, 0);
+		addin = writeAt(addin, imagesFolder, photoFilenames.get(1), 0, 1);
+		addin = writeAt(addin, imagesFolder, photoFilenames.get(2), 1, 0);
+		addin = writeAt(addin, imagesFolder, photoFilenames.get(3), 1, 1);
+
+		ImageIO.write(addin, "JPEG", new File(outFilePath));
 
 		assemblyFilePath = outFilePath;
 	}
@@ -202,26 +206,22 @@ public class ImageUtils {
 	 * @return
 	 * @throws IOException
 	 */
-	private void writeAt(File imageDldFolder, String imgOutFilename, String imgInFilename, int x, int y) throws IOException {
-		int offsety = 49;
-		int offsetx = 49;
-		int padding = 50;
-		int imgSize = 910;
+	private BufferedImage writeAt(BufferedImage outRefImg, File imageDldFolder, String imgInFilename, int x, int y) throws IOException {
 
-		String framePath = imgOutFilename;
-		BufferedImage frame = ImageIO.read(new File(framePath));
 		String addinPath = String.format("%s/%s", imageDldFolder, imgInFilename);
 		BufferedImage addin = cadrage(ImageIO.read(new File(addinPath)));
 		addin = resize(addin, imgSize, imgSize);
 
-		if (frame != null && addin != null) {
-			BufferedImage buf = new BufferedImage(frame.getWidth(), frame.getHeight(), BufferedImage.TYPE_3BYTE_BGR); // ligne 27
+		if (outRefImg != null && addin != null) {
+			BufferedImage buf = new BufferedImage(outRefImg.getWidth(), outRefImg.getHeight(), BufferedImage.TYPE_3BYTE_BGR); // ligne 27
 			Graphics2D g2 = buf.createGraphics();
 
-			g2.drawImage(frame, 0, 0, null);
+			g2.drawImage(outRefImg, 0, 0, null);
 			g2.drawImage(addin, offsety + y * (padding + imgSize), offsetx + x * (padding + imgSize), null);
-			ImageIO.write(buf, "JPEG", new File(framePath));
+
+			return buf;
 		}
+		return null;
 
 	}
 
