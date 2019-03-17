@@ -94,17 +94,20 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		int coefDebug = 100;
 		List<String> photoFilenames = new LinkedList<String>();
 		try {
-			//GPhoto2Server.liveViewEnabled.set(false);
 			BeanSession beanSession = BeanSession.getInstance();
 
 			beanSession.getCameraService().setImageForLiveView(beanSession.getUserHome() + "/gp2srv/attente.jpg");
-			int blinking = 500;
+			int blinking = 350;
 			while (snap < 4) {
-				logger.debug("pose!");
 				buttonLed.setState(true);
 				snippedLed.setState(false);
-				blinkRampe(blinking, 1 * coefDebug, snippedLed, PinState.LOW);
-
+				if (snap == 0) {
+					logger.debug("Blink long");
+					blinkRampe(blinking, 7000, snippedLed, PinState.LOW);
+				} else {
+					logger.debug("Blink court");
+					blinkRampe(blinking, 2000, snippedLed, PinState.LOW);
+				}
 				snippedLed.setState(false);
 				logger.debug("SNAP !!!!");
 
@@ -118,7 +121,6 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 				snap += 1;
 				photoFilenames.add(output);
 			}
-			//GPhoto2Server.liveViewEnabled.set(true);
 			// Google Drive uploading #drive = gdrive.authorize_gdrive_api()
 			// gdrive.upload_files_to_gdrive(drive, photo_files)
 			if (EnabedPrinting) {
@@ -212,22 +214,22 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		led.setState(blinkState.isLow());
 	}
 
-	private void blinkRampe(long delayMax, long durationTotal, GpioPinDigitalOutput led, PinState blinkState) throws InterruptedException {
-		int nbStep = 30;
+	private void blinkRampe(long startDelay, long totalDuration, GpioPinDigitalOutput led, PinState blinkState) throws InterruptedException {
+
+		int nbStep = (int) (2 * totalDuration / startDelay - 1);
+		//long debut = System.currentTimeMillis();
 		//logger.trace("Debut :" + System.currentTimeMillis());
 		led.setState(blinkState);
 		for (int i = 0; i < nbStep; i++) {
-			long currentDelay = delayMax - delayMax * i / (nbStep) * 9 / 10;
-			long currentDuration = durationTotal / nbStep;
-			//logger.trace("Delay : " + currentDelay);
-			long fin = System.currentTimeMillis() + currentDuration;
+			long currentDelay = startDelay - startDelay * i / (nbStep);
+			long fin = System.currentTimeMillis() + currentDelay;
+			led.toggle();
 			while (System.currentTimeMillis() < fin) {
-				led.toggle();
-				Thread.sleep(currentDelay / 2);
 			}
+
 		}
 		led.setState(blinkState);
-		//logger.trace("Fin   :" + System.currentTimeMillis());
+		//logger.trace("Durée   :" + (System.currentTimeMillis() - debut));
 	}
 
 	enum PrintingState {

@@ -35,14 +35,16 @@ public class CameraServiceImpl implements CameraService, Closeable {
 
 	@Override
 	public synchronized byte[] capturePreview() {
+		byte[] res = new byte[1];
 		if (!Objects.isNull(mockPicture)) {
-			if (haveSendMock == 2) {// peut etre que 1
-				return new byte[1];
+			if (haveSendMock < 2) {// peut etre que 1
+				haveSendMock++;
+				res = mockPicture;
 			}
-			haveSendMock++;
-			return mockPicture;
+		} else {
+			res = cameraProvider.getCamera().capturePreview();
 		}
-		return cameraProvider.getCamera().capturePreview();
+		return res;
 	}
 
 	@Override
@@ -186,7 +188,7 @@ public class CameraServiceImpl implements CameraService, Closeable {
 	 * @throws IOException
 	 */
 	@Override
-	public void setImageForLiveView(String imageFilePath) {
+	public synchronized void setImageForLiveView(String imageFilePath) {
 		byte[] imageTemp = null;
 		if (imageFilePath != "null") {
 			InputStream inputStream = null;

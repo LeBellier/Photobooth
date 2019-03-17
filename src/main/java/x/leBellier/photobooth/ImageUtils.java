@@ -56,16 +56,31 @@ public class ImageUtils {
 	 */
 	public void append4mariage(File imagesFolder, List<String> photoFilenames, String outFilePath) throws IOException {
 
-		BufferedImage addin = ImageIO.read(new File(String.format("%s/%s", imagesFolder, "dessin.png")));
+		BufferedImage outRefImg = ImageIO.read(new File(String.format("%s/%s", imagesFolder, "dessin.png")));
+		if (outRefImg != null) {
+			BufferedImage buf = new BufferedImage(outRefImg.getWidth(), outRefImg.getHeight(), BufferedImage.TYPE_3BYTE_BGR); // ligne 27
+			Graphics2D g2 = buf.createGraphics();
 
-		addin = writeAt(addin, imagesFolder, photoFilenames.get(0), 0, 0);
-		addin = writeAt(addin, imagesFolder, photoFilenames.get(1), 0, 1);
-		addin = writeAt(addin, imagesFolder, photoFilenames.get(2), 1, 0);
-		addin = writeAt(addin, imagesFolder, photoFilenames.get(3), 1, 1);
+			g2.drawImage(outRefImg, 0, 0, null);
 
-		ImageIO.write(addin, "JPEG", new File(outFilePath));
+			for (byte i = 0; i < 4; i++) {
+				String addinPath = String.format("%s/%s", imagesFolder, photoFilenames.get(i));
+				BufferedImage addin = ImageIO.read(new File(addinPath));
 
-		assemblyFilePath = outFilePath;
+				addin = addin.getSubimage((addin.getWidth() - addin.getHeight()) / 2, 0, addin.getHeight(), addin.getHeight());
+				addin = resize(addin, imgSize, imgSize);
+
+				if (outRefImg != null && addin != null) {
+					g2.drawImage(addin, offsety + (i & 1) * (padding + imgSize), offsetx + (i / 2 & 1) * (padding + imgSize), null);
+
+				}
+
+			}
+
+			ImageIO.write(buf, "JPEG", new File(outFilePath));
+			assemblyFilePath = outFilePath;
+		}
+
 	}
 
 	/**
