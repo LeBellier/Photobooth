@@ -4,7 +4,7 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>x.leBellier.photobooth</groupId>
 	<artifactId>Photobooth</artifactId>
-	<version>2.9.0</version>
+	<version>3.0.0</version>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -166,6 +166,7 @@
 					<target>1.6</target>
 				</configuration>
 			</plugin>
+			<!--  > For debug 		<-->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -188,25 +189,17 @@
 				</executions>
 			</plugin>
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-source-plugin</artifactId>
-				<version>3.0.1</version>
-				<configuration>
-					<outputDirectory>${project.build.directory}/src</outputDirectory>
-				</configuration>
-			</plugin>
-			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.4</version>
 				<executions>
 					<execution>
 						<phase>package</phase>
+						<goals>
+							<goal>run</goal>
+						</goals>
 						<configuration>
 							<tasks>
 								<echo file="${project.build.directory}/run.sh" append="false">
-									java&#032;-Xms300M&#032;-jar&#032;${project.build.finalName}.jar
-								</echo>
-								<echo file="${project.build.directory}/run.bat" append="false">
 									java&#032;-Xms300M&#032;-jar&#032;${project.build.finalName}.jar
 								</echo>
 								<echo>ANT TASK - copying files....</echo>
@@ -222,16 +215,17 @@
 								</copy>
 							</tasks>
 						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
 					</execution>
 				</executions>
 			</plugin>
-			<!--plugin>
+			<!--  > End For		<-->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-assembly-plugin</artifactId>
 				<version>2.6</version>
 				<configuration>
+					<!--  >Goal : assembly:single		<-->
+					<outputDirectory>${project.build.directory}/distrib</outputDirectory>
 					<descriptorRefs>
 						<descriptorRef>jar-with-dependencies</descriptorRef>
 					</descriptorRefs>
@@ -243,11 +237,27 @@
 					</archive>
 				</configuration>
 			</plugin>
-			< plugin> <groupId>org.apache.maven.plugins</groupId> <artifactId>maven-shade-plugin</artifactId>
-			<version>2.2</version> <executions> <execution> <phase>package</phase> <goals>
-			<goal>shade</goal> </goals> <configuration> <transformers> <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
-			<mainClass>${mainClass}</mainClass> </transformer> </transformers> </configuration>
-			</execution> </executions> </plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-deploy-plugin</artifactId>
+				<version>2.8.2</version>
+			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.0.1</version>
+				<configuration>
+					<skipSource>True</skipSource>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 </project>
