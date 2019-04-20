@@ -194,10 +194,16 @@ public class CameraServiceImpl implements CameraService, Closeable {
 			InputStream inputStream = null;
 			try {
 				try {
-					// open image
+					// open image externe
 					File imgPath = new File(imageFilePath);
-					inputStream = new FileInputStream(imgPath);
-				} catch (Exception e) {
+					if (imgPath.exists()) {
+						inputStream = new FileInputStream(imgPath);
+					} else {
+						// open image interne
+						inputStream = this.getClass().getResourceAsStream(imageFilePath);
+					}
+				} catch (Exception ex) {
+					logger.trace(ex.getMessage());
 					logger.trace("Echec de la vie avec cette image : " + imageFilePath);
 				}
 

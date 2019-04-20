@@ -96,16 +96,16 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		try {
 			BeanSession beanSession = BeanSession.getInstance();
 
-			beanSession.getCameraService().setImageForLiveView(beanSession.getUserHome() + "/gp2srv/attente.jpg");
+			beanSession.getCameraService().setImageForLiveView("/x/mvmn/gp2srv/web/static/attente.jpg");
 			int blinking = 350;
 			while (snap < 4) {
 				buttonLed.setState(true);
 				snippedLed.setState(false);
 				if (snap == 0) {
-					logger.debug("Blink long");
+					//logger.debug("Blink long");
 					blinkRampe(blinking, 7000, snippedLed, PinState.LOW);
 				} else {
-					logger.debug("Blink court");
+					//logger.debug("Blink court");
 					blinkRampe(blinking, 2000, snippedLed, PinState.LOW);
 				}
 				snippedLed.setState(false);
