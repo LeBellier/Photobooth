@@ -53,6 +53,7 @@
             </goals>
             <properties>
                 <maven.javadoc.skip>true</maven.javadoc.skip>
+                <skipTests>true</skipTests>
             </properties>
         </action>
     </actions>

@@ -25,7 +25,7 @@ public final class Snippet {
 			GPhoto2Server server = new GPhoto2Server(bean.port, bean.auth);
 			server.start().join();
 		} catch (Exception e) {
-			bean.logger.error(e);
+			System.err.println(e);
 		} finally {
 		}
 	}

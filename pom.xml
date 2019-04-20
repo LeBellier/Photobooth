@@ -88,7 +88,7 @@
 		<dependency>
 			<groupId>com.pi4j</groupId>
 			<artifactId>pi4j-core</artifactId>
-			<version>1.2-SNAPSHOT</version>
+			<version>1.2</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.apis</groupId>
@@ -188,6 +188,14 @@
 				</executions>
 			</plugin>
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<version>3.0.1</version>
+				<configuration>
+					<outputDirectory>${project.build.directory}/src</outputDirectory>
+				</configuration>
+			</plugin>
+			<plugin>
 				<artifactId>maven-antrun-plugin</artifactId>
 				<version>1.4</version>
 				<executions>
@@ -202,15 +210,12 @@
 									java&#032;-Xms300M&#032;-jar&#032;${project.build.finalName}.jar
 								</echo>
 								<echo>ANT TASK - copying files....</echo>
-								<!--copy todir="A:\gp2srv\lib" overwrite="true" flatten="true">
+								<copy todir="A:\gp2srv\lib" overwrite="false" flatten="true">
 									<fileset dir="${project.build.directory}" includes="lib/*.jar" >
 									</fileset>
-									<fileset dir="${basedir}" includes="lib/*.jar" >
-									</fileset>
-								</copy-->
+								</copy>
 								<copy todir="A:\gp2srv" overwrite="true" flatten="true">
 									<fileset dir="${project.build.directory}">
-										<include name="*.bat" />
 										<include name="*.sh" />
 										<include name="*.jar" />
 									</fileset>
