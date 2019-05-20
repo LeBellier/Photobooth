@@ -32,6 +32,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 	protected final GpioPinDigitalOutput snippedLed;
 	protected final GpioPinDigitalInput btnSnip;
 	protected final GpioPinDigitalInput btnReset;
+	protected final GpioPinDigitalInput btnValidate;
 
 	protected final boolean EnabedPrinting = true;
 
@@ -45,15 +46,16 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		gpio = GpioFactory.getInstance();
 
 		// provision gpio pin #01 as an output pin and turn on
-		printLed = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_08, "MyLED", PinState.HIGH);
-		buttonLed = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_09, "MyLED", PinState.HIGH);
-		snippedLed = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_07, "MyLED", PinState.HIGH);
+		printLed = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_05, "MyLED", PinState.HIGH);
+		buttonLed = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, "MyLED", PinState.HIGH);
+		snippedLed = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_02, "MyLED", PinState.HIGH);
 
-		btnSnip = gpio.provisionDigitalInputPin(RaspiPin.GPIO_15, "btn Snipe", PinPullResistance.PULL_DOWN);
+		btnSnip = gpio.provisionDigitalInputPin(RaspiPin.GPIO_01, "btn Snipe", PinPullResistance.PULL_DOWN);
 		btnSnip.addListener(this);
-
-		btnReset = gpio.provisionDigitalInputPin(RaspiPin.GPIO_16, "btn reset", PinPullResistance.PULL_DOWN);
+		btnReset = gpio.provisionDigitalInputPin(RaspiPin.GPIO_03, "btn reset", PinPullResistance.PULL_DOWN);
 		btnReset.addListener(this);
+		btnValidate = gpio.provisionDigitalInputPin(RaspiPin.GPIO_04, "btn validate", PinPullResistance.PULL_DOWN);
+		btnValidate.addListener(this);
 	}
 
 	@Override
@@ -128,6 +130,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 				printLed.setState(false);
 				String path = String.format("%s/Montage%s.jpg", beanSession.getImagesFolder(), beanSession.getSdf().format(new Date()));
 
+				logger.debug(String.format("%s/%s", beanSession.getImagesFolder(), "dessin.png"));
 				beanSession.getImageUtils().append4mariage(beanSession.getImagesFolder(), photoFilenames, path);
 
 				beanSession.getCameraService().setImageForLiveView(path);
@@ -181,7 +184,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		if (isScriptRunning && iswaitingAck == PrintingState.WaitAck) {
 			if (event.getPin() == btnReset) {
 				iswaitingAck = PrintingState.NegativeAck;
-			} else if (event.getPin() == btnSnip) {
+			} else if (event.getPin() == btnValidate) {
 				iswaitingAck = PrintingState.PositiveAck;
 			}
 		}
@@ -194,6 +197,8 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 				BeanSession beanSession = BeanSession.getInstance();
 
 				CameraFileSystemEntryBean cfseb = beanSession.getCameraService().capture();
+				logger.trace("cfseb.getName() = " + cfseb.getName());
+
 				beanSession.getCameraService().downloadFile(cfseb.getPath(), cfseb.getName(), beanSession.getImagesFolder(), dstFilename);
 				beanSession.getCameraService().fileDelete(cfseb.getPath(), cfseb.getName());
 				break;
