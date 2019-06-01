@@ -33,6 +33,8 @@ public final class Snippet {
 	protected LauncherBean parseCmdArgs(String[] args) {
 		final Options cliOptions = new Options();
 		cliOptions.addOption("auth", true, "Require authentication (login:password).");
+		cliOptions.addOption("initTime", true, "Entre bouton vert et 1ere photo( en ms)");
+		cliOptions.addOption("intervalTime", true, "entre deux photos( en ms)");
 		// cliOptions.addOption("gphoto2path", true, "Path to gphoto2 executable.");
 		cliOptions.addOption("imgfolder", true, "Path to store downloaded images at.");
 		cliOptions.addOption("logLevel", true, "Log level (TRACE, DEBUG, INFO, WARN, ERROR, SEVERE, FATAL).");
@@ -54,7 +56,33 @@ public final class Snippet {
 			} else {
 				logger.setLevel(LogLevel.TRACE);
 			}
+			if (commandLine.hasOption("initTime")) {
+				String timeOptionVal = commandLine.getOptionValue("initTime");
+				try {
+					int parsedPort = Integer.parseInt(timeOptionVal.trim());
+					if (parsedPort < 1 || parsedPort > 65535) {
+						throw new RuntimeException("Bad port value: " + parsedPort);
+					} else {
+						beanSession.setInitTime(parsedPort);
+					}
+				} catch (NumberFormatException e) {
+					throw new RuntimeException("Unable to parse port parameter as integer: '" + timeOptionVal + "'.");
+				}
 
+			}
+			if (commandLine.hasOption("intervalTime")) {
+				String timeOptionVal = commandLine.getOptionValue("intervalTime");
+				try {
+					int parsedPort = Integer.parseInt(timeOptionVal.trim());
+					if (parsedPort < 1 || parsedPort > 65535) {
+						throw new RuntimeException("Bad port value: " + parsedPort);
+					} else {
+						beanSession.setIntervalTime(parsedPort);
+					}
+				} catch (NumberFormatException e) {
+					throw new RuntimeException("Unable to parse port parameter as integer: '" + timeOptionVal + "'.");
+				}
+			}
 			String[] auth = null;
 			if (commandLine.hasOption("auth")) {
 				final String authStr = commandLine.getOptionValue("auth");

@@ -69,6 +69,9 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 				buttonLed.setState(false);
 				if (br.ready()) {
 					String s = br.readLine();
+					if (s.contains("stop")) {
+						throw new InterruptedException();
+					}
 					goScript = true;
 				}
 
@@ -83,6 +86,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 			logger.error(ex.getMessage());
 		} finally {
 			gpio.shutdown();
+			System.exit(0);
 		}
 	}
 
@@ -104,11 +108,11 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 				buttonLed.setState(true);
 				snippedLed.setState(false);
 				if (snap == 0) {
-					//logger.debug("Blink long");
-					blinkRampe(blinking, 7000, snippedLed, PinState.LOW);
+					//logger.debug("Blink long : " + beanSession.getInitTime());
+					blinkRampe(blinking, beanSession.getInitTime(), snippedLed, PinState.LOW);
 				} else {
-					//logger.debug("Blink court");
-					blinkRampe(blinking, 2000, snippedLed, PinState.LOW);
+					//logger.debug("Blink court : " + beanSession.getIntervalTime());
+					blinkRampe(blinking, beanSession.getIntervalTime(), snippedLed, PinState.LOW);
 				}
 				snippedLed.setState(false);
 				logger.debug("SNAP !!!!");
@@ -197,7 +201,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 				BeanSession beanSession = BeanSession.getInstance();
 
 				CameraFileSystemEntryBean cfseb = beanSession.getCameraService().capture();
-				logger.trace("cfseb.getName() = " + cfseb.getName());
+				logger.trace("cfseb = " + cfseb.toString());
 
 				beanSession.getCameraService().downloadFile(cfseb.getPath(), cfseb.getName(), beanSession.getImagesFolder(), dstFilename);
 				beanSession.getCameraService().fileDelete(cfseb.getPath(), cfseb.getName());

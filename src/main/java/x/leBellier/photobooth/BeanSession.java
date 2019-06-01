@@ -40,6 +40,8 @@ public class BeanSession implements Provider<TemplateEngine>, CameraProvider {
 	private final File userHome;
 	private final File appHomeFolder;
 	private final VelocityContextService velocityContextService;
+	private Integer initTime;
+	private Integer intervalTime;
 
 	private volatile TemplateEngine templateEngine;
 
@@ -62,6 +64,9 @@ public class BeanSession implements Provider<TemplateEngine>, CameraProvider {
 		appHomeFolder.mkdir();
 
 		velocityContextService = new VelocityContextService();
+
+		initTime = 5000;
+		intervalTime = 2000;
 	}
 
 	public DateFormat getSdf() {
@@ -86,6 +91,22 @@ public class BeanSession implements Provider<TemplateEngine>, CameraProvider {
 
 	public VelocityContextService getVelocityContextService() {
 		return velocityContextService;
+	}
+
+	public Integer getInitTime() {
+		return initTime;
+	}
+
+	public void setInitTime(Integer initTime) {
+		this.initTime = initTime;
+	}
+
+	public Integer getIntervalTime() {
+		return intervalTime;
+	}
+
+	public void setIntervalTime(Integer intervalTime) {
+		this.intervalTime = intervalTime;
 	}
 
 	public PhotoboothGpio getGpio() {
