@@ -18,7 +18,10 @@ Runtime dependencies:
 - Java 8+ (use Java5 compatibility builds if you need to run on earlier java versions - see in releases).
 
 ## Add GPIO and Printer
-Like this project in python the aim of this fork is to do a java controller for my photobooth based en [this](https://www.instructables.com/id/Raspberry-Pi-photo-booth-controller/)
+Like this project in python the aim of this fork is to do a java controller for my photobooth based on : 
+- ESP32 CAM to take picture
+- Ring Light to have enough light
+- Another ESP to control LEDs and button with MQTT
 
 ---
 
