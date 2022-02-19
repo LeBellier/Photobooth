@@ -1,4 +1,6 @@
-# GPhoto2 Server v2.8
+# Photobooth project from GPhoto2 Server V2.8
+
+## GPhoto2 Server v2.8
 This is a Jetty-powered WebApp that serves as a web-interface for GPhoto2 program.
 It can be put on any machine that has libgphoto2 and Java 1.5 or above. The calls to GPhoto2 are done using JNA.
 
