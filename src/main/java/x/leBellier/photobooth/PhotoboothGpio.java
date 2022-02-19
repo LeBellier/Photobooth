@@ -15,6 +15,7 @@ import java.io.InputStreamReader;
 import java.util.Date;
 import java.util.LinkedList;
 import java.util.List;
+
 import x.mvmn.jlibgphoto2.api.CameraFileSystemEntryBean;
 import x.mvmn.jlibgphoto2.exception.GP2CameraBusyException;
 import x.mvmn.log.api.Logger;
@@ -97,7 +98,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		}
 		isScriptRunning = true;
 		int snap = 0;
-		int coefDebug = 100;
+		// int coefDebug = 100;
 		List<String> photoFilenames = new LinkedList<String>();
 		try {
 			BeanSession beanSession = BeanSession.getInstance();
@@ -108,10 +109,10 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 				buttonLed.setState(true);
 				snippedLed.setState(false);
 				if (snap == 0) {
-					//logger.debug("Blink long : " + beanSession.getInitTime());
+					// logger.debug("Blink long : " + beanSession.getInitTime());
 					blinkRampe(blinking, beanSession.getInitTime(), snippedLed, PinState.LOW);
 				} else {
-					//logger.debug("Blink court : " + beanSession.getIntervalTime());
+					// logger.debug("Blink court : " + beanSession.getIntervalTime());
 					blinkRampe(blinking, beanSession.getIntervalTime(), snippedLed, PinState.LOW);
 				}
 				snippedLed.setState(false);
@@ -132,7 +133,8 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 			if (EnabedPrinting) {
 				logger.debug("please wait while your photos print...");
 				printLed.setState(false);
-				String path = String.format("%s/Montage%s.jpg", beanSession.getImagesFolder(), beanSession.getSdf().format(new Date()));
+				String path = String.format("%s/Montage%s.jpg", beanSession.getImagesFolder(),
+						beanSession.getSdf().format(new Date()));
 
 				logger.debug(String.format("%s/%s", beanSession.getImagesFolder(), "dessin.png"));
 				beanSession.getImageUtils().append4mariage(beanSession.getImagesFolder(), photoFilenames, path);
@@ -178,7 +180,7 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 
 	public void handleGpioPinDigitalStateChangeEvent(GpioPinDigitalStateChangeEvent event) {
 		if (event != null && event.getState().isHigh()) {
-			logger.trace("Bouton relaché");
+			logger.trace("Bouton relachï¿½");
 			return;
 		}
 
@@ -203,7 +205,8 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 				CameraFileSystemEntryBean cfseb = beanSession.getCameraService().capture();
 				logger.trace("cfseb = " + cfseb.toString());
 
-				beanSession.getCameraService().downloadFile(cfseb.getPath(), cfseb.getName(), beanSession.getImagesFolder(), dstFilename);
+				beanSession.getCameraService().downloadFile(cfseb.getPath(), cfseb.getName(),
+						beanSession.getImagesFolder(), dstFilename);
 				beanSession.getCameraService().fileDelete(cfseb.getPath(), cfseb.getName());
 				break;
 			} catch (GP2CameraBusyException e) {
@@ -213,7 +216,8 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 
 	}
 
-	private void blink(long delay, long duration, GpioPinDigitalOutput led, PinState blinkState) throws InterruptedException {
+	private void blink(long delay, long duration, GpioPinDigitalOutput led, PinState blinkState)
+			throws InterruptedException {
 		long fin = System.currentTimeMillis() + duration;
 		led.setState(blinkState);
 		while (System.currentTimeMillis() < fin) {
@@ -223,11 +227,12 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 		led.setState(blinkState.isLow());
 	}
 
-	private void blinkRampe(long startDelay, long totalDuration, GpioPinDigitalOutput led, PinState blinkState) throws InterruptedException {
+	private void blinkRampe(long startDelay, long totalDuration, GpioPinDigitalOutput led, PinState blinkState)
+			throws InterruptedException {
 
 		int nbStep = (int) (2 * totalDuration / startDelay - 1);
-		//long debut = System.currentTimeMillis();
-		//logger.trace("Debut :" + System.currentTimeMillis());
+		// long debut = System.currentTimeMillis();
+		// logger.trace("Debut :" + System.currentTimeMillis());
 		led.setState(blinkState);
 		for (int i = 0; i < nbStep; i++) {
 			long currentDelay = startDelay - startDelay * i / (nbStep);
@@ -238,14 +243,11 @@ public class PhotoboothGpio extends Thread implements GpioPinListenerDigital {
 
 		}
 		led.setState(blinkState);
-		//logger.trace("Durée   :" + (System.currentTimeMillis() - debut));
+		// logger.trace("Durï¿½e :" + (System.currentTimeMillis() - debut));
 	}
 
 	enum PrintingState {
-		NotNeeded,
-		WaitAck,
-		PositiveAck,
-		NegativeAck
+		NotNeeded, WaitAck, PositiveAck, NegativeAck
 	}
 
 	public void setGoScript() {

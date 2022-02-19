@@ -16,7 +16,7 @@ import org.junit.Test;
 public class ImageUtilsTest {
 
 	private static final DateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HHmmss");
-	private String fileName;
+	// private String fileName;
 
 	@Test
 	public void testExecution() {
@@ -29,7 +29,7 @@ public class ImageUtilsTest {
 		photoFilenames.add("capt0004.jpg");
 
 		try {
-			//Get folder path from resources folder
+			// Get folder path from resources folder
 			ClassLoader classLoader = getClass().getClassLoader();
 
 			File file = new File(classLoader.getResource("x/leBellier/photobooth/capt0001.jpg").getFile());
@@ -40,7 +40,8 @@ public class ImageUtilsTest {
 
 			beanSession.getImageUtils().append4(BeanSession.getInstance().getImagesFolder(), photoFilenames, path);
 
-			BufferedImage imgRes = beanSession.getImageUtils().readPhotoFile(imageDldFolder, String.format("Montage%s.jpg", date));
+			BufferedImage imgRes = beanSession.getImageUtils().readPhotoFile(imageDldFolder,
+					String.format("Montage%s.jpg", date));
 			BufferedImage imgRef = beanSession.getImageUtils().readPhotoFile(imageDldFolder, "Montage.jpg");
 			Assert.assertTrue(compareImages(imgRes, imgRef));
 
@@ -62,7 +63,7 @@ public class ImageUtilsTest {
 		photoFilenames.add("capt0004.jpg");
 
 		try {
-			//Get folder path from resources folder
+			// Get folder path from resources folder
 			ClassLoader classLoader = getClass().getClassLoader();
 
 			File file = new File(classLoader.getResource("x/leBellier/photobooth/capt0001.jpg").getFile());
@@ -73,16 +74,18 @@ public class ImageUtilsTest {
 
 			long start = System.currentTimeMillis();
 
-			beanSession.getImageUtils().append4mariage(BeanSession.getInstance().getImagesFolder(), photoFilenames, path);
+			beanSession.getImageUtils().append4mariage(BeanSession.getInstance().getImagesFolder(), photoFilenames,
+					path);
 			long fin = System.currentTimeMillis();
 
 			System.out.println("Methode runnning during :" + (fin - start));
 
-			BufferedImage imgRes = beanSession.getImageUtils().readPhotoFile(imageDldFolder, String.format("Montage%s.jpg", date));
+			BufferedImage imgRes = beanSession.getImageUtils().readPhotoFile(imageDldFolder,
+					String.format("Montage%s.jpg", date));
 			BufferedImage imgRef = beanSession.getImageUtils().readPhotoFile(imageDldFolder, "MontageMariage.jpg");
 			Assert.assertTrue(compareImages(imgRes, imgRef));
 
-			//new File(imageDldFolder, String.format("Montage%s.jpg", date)).delete();
+			new File(imageDldFolder, String.format("Montage%s.jpg", date)).delete();
 		} catch (IOException ex) {
 			Logger.getLogger(ImageUtilsTest.class.getName()).log(Level.SEVERE, null, ex);
 			Assert.assertNull(ex);

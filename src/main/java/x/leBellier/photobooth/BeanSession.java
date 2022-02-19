@@ -25,15 +25,16 @@ import x.mvmn.log.api.Logger;
  */
 public class BeanSession implements Provider<TemplateEngine>, CameraProvider {
 
-	//Instance unique pré-initialisée
+	// Instance unique prï¿½-initialisï¿½e
 	private static BeanSession INSTANCE = new BeanSession();
 
 	/**
-	 * Point d'accès pour l'instance unique du singleton
+	 * Point d'accï¿½s pour l'instance unique du singleton
 	 */
 	public static synchronized BeanSession getInstance() {
 		return INSTANCE;
 	}
+
 	private final DateFormat sdf;
 	private final ImageUtils imageUtils;
 	private final Logger logger;
@@ -48,12 +49,12 @@ public class BeanSession implements Provider<TemplateEngine>, CameraProvider {
 	private volatile GP2Camera camera;
 	private CameraService cameraService;
 
-	private PhotoboothGpio gpio;  // Singleton
-	private File imagesFolder;	// Final
+	private PhotoboothGpio gpio; // Singleton
+	private File imagesFolder; // Final
 
 	private boolean usemocks = false;
 
-	// Constructeur privé
+	// Constructeur privï¿½
 	private BeanSession() {
 		sdf = new SimpleDateFormat("yyyy-MM-dd_HHmmss");
 		imageUtils = new ImageUtils();

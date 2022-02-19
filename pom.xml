@@ -1,10 +1,9 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-		 xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>x.leBellier.photobooth</groupId>
 	<artifactId>Photobooth</artifactId>
-	<version>3.0.0</version>
+	<version>3.0.1</version>
 	<packaging>jar</packaging>
 
 	<properties>
@@ -199,17 +198,13 @@
 						</goals>
 						<configuration>
 							<tasks>
-								<echo file="${project.build.directory}/run.sh" append="false">
-									java&#032;-Xms300M&#032;-jar&#032;${project.build.finalName}.jar
-								</echo>
 								<echo>ANT TASK - copying files....</echo>
-								<copy todir="A:\gp2srv\lib" overwrite="false" flatten="true">
+								<copy todir="distrib/lib" overwrite="false" flatten="true">
 									<fileset dir="${project.build.directory}" includes="lib/*.jar" >
 									</fileset>
 								</copy>
-								<copy todir="A:\gp2srv" overwrite="true" flatten="true">
+								<copy todir="distrib" overwrite="true" flatten="true">
 									<fileset dir="${project.build.directory}">
-										<include name="*.sh" />
 										<include name="*.jar" />
 									</fileset>
 								</copy>

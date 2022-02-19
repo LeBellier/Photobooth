@@ -90,7 +90,7 @@ public final class Snippet {
 				if (separatorIndex > 0) {
 					final String username = authStr.substring(0, separatorIndex);
 					final String password = authStr.substring(separatorIndex + 1);
-					auth = new String[]{username, password};
+					auth = new String[] { username, password };
 				}
 			}
 
@@ -120,21 +120,16 @@ public final class Snippet {
 			return bean;
 
 		} catch (ParseException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return new LauncherBean();
 		} catch (RuntimeException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return new LauncherBean();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 			return new LauncherBean();
 		}
-
 	}
-
 }
 
 class LauncherBean {
