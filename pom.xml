@@ -94,6 +94,12 @@
 			<artifactId>google-api-services-drive</artifactId>
 			<version>v2-rev332-1.25.0</version>
 		</dependency>
+<!-- https://mvnrepository.com/artifact/org.eclipse.paho/org.eclipse.paho.client.mqttv3 -->
+<dependency>
+    <groupId>org.eclipse.paho</groupId>
+    <artifactId>org.eclipse.paho.client.mqttv3</artifactId>
+    <version>1.2.5</version>
+</dependency>
 	</dependencies>
 
 	<reporting>
