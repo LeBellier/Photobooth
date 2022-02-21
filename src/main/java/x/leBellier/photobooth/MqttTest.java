@@ -24,7 +24,7 @@ public final class MqttTest implements MqttCallback {
 
 		try {
 
-			String broker = "tcp://localhost:1883";
+			String broker = "tcp://192.168.50.111:1883";
 			String topicName = "test/topic";
 			int qos = 1;
 
@@ -47,13 +47,13 @@ public final class MqttTest implements MqttCallback {
 			mqttClient.connect(connOpts); // connects the broker with connect options
 			topic2.publish(message); // publishes the message to the topic(test/topic)
 
-//			// We're using eclipse paho library so we've to go with MqttCallback
-//			MqttClient client = new MqttClient("tcp://localhost:1883", "clientid");
-//			client.setCallback(this);
-//			MqttConnectOptions mqOptions = new MqttConnectOptions();
-//			mqOptions.setCleanSession(true);
-//			client.connect(mqOptions); // connecting to broker
-//			client.subscribe("test/topic"); // subscribing to the topic name test/topic
+			// We're using eclipse paho library so we've to go with MqttCallback
+			MqttClient client = new MqttClient("tcp://192.168.50.111:1883", "clientid");
+			client.setCallback(this);
+			MqttConnectOptions mqOptions = new MqttConnectOptions();
+			mqOptions.setCleanSession(true);
+			client.connect(mqOptions); // connecting to broker
+			client.subscribe("test/topic"); // subscribing to the topic name test/topic
 
 		} catch (Exception e) {
 			System.err.println(e);

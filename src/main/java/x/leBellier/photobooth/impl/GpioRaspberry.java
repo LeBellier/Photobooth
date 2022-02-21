@@ -13,6 +13,7 @@ import com.pi4j.io.gpio.event.GpioPinListenerDigital;
 import x.leBellier.photobooth.BeanSession;
 import x.leBellier.photobooth.GpioService;
 import x.leBellier.photobooth.PhotoboothGpio;
+import x.leBellier.photobooth.PhotoboothGpio.StateMachine;
 import x.mvmn.log.api.Logger;
 
 public class GpioRaspberry implements GpioService, GpioPinListenerDigital {
@@ -20,9 +21,8 @@ public class GpioRaspberry implements GpioService, GpioPinListenerDigital {
 	protected final Logger logger;
 
 	protected final GpioController gpio;
-	protected final GpioPinDigitalOutput printLed;
+	protected final GpioPinDigitalOutput blueLed;
 	protected final GpioPinDigitalOutput buttonLed;
-	protected final GpioPinDigitalOutput snippedLed;
 	protected final GpioPinDigitalInput btnSnip;
 	protected final GpioPinDigitalInput btnReset;
 	protected final GpioPinDigitalInput btnValidate;
@@ -35,9 +35,8 @@ public class GpioRaspberry implements GpioService, GpioPinListenerDigital {
 		gpio = GpioFactory.getInstance();
 
 		// provision gpio pin #01 as an output pin and turn on
-		printLed = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_05, "MyLED", PinState.HIGH);
+		blueLed = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_05, "MyLED", PinState.HIGH);
 		buttonLed = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_00, "MyLED", PinState.HIGH);
-		snippedLed = gpio.provisionDigitalOutputPin(RaspiPin.GPIO_02, "MyLED", PinState.HIGH);
 
 		btnSnip = gpio.provisionDigitalInputPin(RaspiPin.GPIO_01, "btn Snipe", PinPullResistance.PULL_DOWN);
 		btnSnip.addListener(this);
@@ -55,28 +54,58 @@ public class GpioRaspberry implements GpioService, GpioPinListenerDigital {
 			return;
 		}
 
-		if (event.getPin() == btnSnip && photobooth.getCurrentState() == StateMachine.StandBy) {
-			photobooth.setCurrentState(StateMachine.SnapAsk);
-		}
-		if (photobooth.getCurrentState() == StateMachine.WaitPrintAck) {
+		switch (photobooth.getCurrentState()) {
+		case StandBy:
+			if (event.getPin() == btnSnip) {
+				photobooth.setCurrentState(StateMachine.Snap);
+			}
+			break;
+		case Snap:
+			break;
+		case PrintPhoto:
+			break;
+		case WaitPrintAck:
 			if (event.getPin() == btnReset) {
 				photobooth.setCurrentState(StateMachine.NegativePrintAck);
 			} else if (event.getPin() == btnValidate) {
 				photobooth.setCurrentState(StateMachine.PositivePrintAck);
 			}
+			break;
+		case NegativePrintAck:
+			break;
+		case PositivePrintAck:
+			break;
 		}
 	}
 
 	@Override
-	public void setStateBtnLed(Boolean state) {
-		// TODO Auto-generated method stub
-
+	public void setBtnLed() {
+		buttonLed.setState(false);
 	}
 
 	@Override
-	public void setStateBlueLed(Boolean state) {
-		// TODO Auto-generated method stub
+	public void resetBtnLed() {
+		buttonLed.setState(true);
+	}
 
+	@Override
+	public void toggleBtnLed() {
+		buttonLed.toggle();
+	}
+
+	@Override
+	public void setBlueLed() {
+		blueLed.setState(false);
+	}
+
+	@Override
+	public void resetBlueLed() {
+		blueLed.setState(true);
+	}
+
+	@Override
+	public void toggleBlueLed() {
+		blueLed.toggle();
 	}
 
 	@Override
@@ -114,4 +143,5 @@ public class GpioRaspberry implements GpioService, GpioPinListenerDigital {
 		led.setState(blinkState);
 		// logger.trace("Dur�e :" + (System.currentTimeMillis() - debut));
 	}
+
 }

@@ -2,13 +2,17 @@ package x.leBellier.photobooth;
 
 public interface GpioService {
 
-	enum StateMachine {
-		StandBy, SnapAsk, Snap, WaitPrintAck, PositivePrintAck, NegativePrintAck
-	}
+	public void setBtnLed();
 
-	public void setStateBtnLed(Boolean state);
+	public void resetBtnLed();
 
-	public void setStateBlueLed(Boolean state);
+	public void toggleBtnLed();
+
+	public void setBlueLed();
+
+	public void resetBlueLed();
+
+	public void toggleBlueLed();
 
 	public void close();
 
