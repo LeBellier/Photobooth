@@ -38,12 +38,12 @@ public class GpioMqtt implements GpioService, MqttCallback {
 		try {
 
 			String broker = "tcp://192.168.50.111:1883";
-			String topicName = "switchTC/cmnd";
+			String topicName = "switchTC/cmnd/#";
 
 			MqttConnectOptions mqOptions = new MqttConnectOptions();
 			mqOptions.setCleanSession(true);
 
-			client = new MqttClient(broker, "clientid");
+			client = new MqttClient(broker, "clientphotobooth");
 			client.setCallback(this);
 			client.connect(mqOptions); // connecting to broker
 			client.subscribe(topicName); // subscribing to the topic name test/topic
@@ -106,7 +106,7 @@ public class GpioMqtt implements GpioService, MqttCallback {
 			// For POST only - END
 
 			int responseCode = con.getResponseCode();
-			logger.trace("POST Response Code :: " + responseCode);
+//			logger.trace("POST Response Code :: " + responseCode);
 
 			if (responseCode == HttpURLConnection.HTTP_OK) { // success
 				BufferedReader in = new BufferedReader(new InputStreamReader(con.getInputStream()));
@@ -119,9 +119,9 @@ public class GpioMqtt implements GpioService, MqttCallback {
 				in.close();
 
 				// print result
-				logger.trace(response.toString());
+//				logger.trace(response.toString());
 			} else {
-				logger.trace("POST request not worked");
+				logger.error("POST request not worked");
 			}
 
 		} catch (ProtocolException e) {
@@ -153,7 +153,7 @@ public class GpioMqtt implements GpioService, MqttCallback {
 		logger.trace(String.format("Mqtt receive a message : Topic = %s / Message = %s", topic, message.toString()));
 		switch (photobooth.getCurrentState()) {
 		case StandBy:
-			if (topic == "switchTC/cmnd/POWER1") {
+			if (topic.contains("POWER1")) {
 				photobooth.setCurrentState(StateMachine.Snap);
 			}
 			break;
@@ -162,9 +162,9 @@ public class GpioMqtt implements GpioService, MqttCallback {
 		case PrintPhoto:
 			break;
 		case WaitPrintAck:
-			if (topic == "switchTC/cmnd/POWER3") {
+			if (topic.contains("POWER3")) {
 				photobooth.setCurrentState(StateMachine.NegativePrintAck);
-			} else if (topic == "switchTC/cmnd/POWER2") {
+			} else if (topic.contains("POWER2")) {
 				photobooth.setCurrentState(StateMachine.PositivePrintAck);
 			}
 			break;

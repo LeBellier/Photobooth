@@ -56,6 +56,7 @@ public class PhotoboothGpio extends Thread {
 
 			logger.debug("Press enter to snap :p");
 			while (true) {
+				logger.debug("Current State = " + state);
 
 				switch (state) {
 				case StandBy:
