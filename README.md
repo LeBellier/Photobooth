@@ -20,8 +20,15 @@ Runtime dependencies:
 ## Add GPIO and Printer
 Like this project in python the aim of this fork is to do a java controller for my photobooth based on : 
 - ESP32 CAM to take picture
+	- https://fr.aliexpress.com/af/ESP-CAM.htm
+	- https://fr.aliexpress.com/item/1005001579306340.html
+	- https://fr.aliexpress.com/item/32826006482.htm
 - Ring Light to have enough light
-- Another ESP to control LEDs and button with MQTT
+	- https://fr.aliexpress.com/af/Adaptateur-d%2527alimentation-12V-3A.html
+	- https://fr.aliexpress.com/af/strip-led-2835%252C-12V%252C-5m-60LED%252Fm-cold-white.html 
+- Another ESP to control LEDs and button with MQTT	
+	- https://fr.aliexpress.com/af/wemos-d1-mini.html
+	- Some LEDs + Buttons 
 
 ---
 
