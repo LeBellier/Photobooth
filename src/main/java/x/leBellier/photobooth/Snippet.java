@@ -2,10 +2,12 @@ package x.leBellier.photobooth;
 
 import java.io.File;
 import java.io.IOException;
+
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
+
 import x.mvmn.gp2srv.GPhoto2Server;
 import x.mvmn.gp2srv.camera.CameraService;
 import x.mvmn.log.api.Logger;

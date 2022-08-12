@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
+import java.net.NoRouteToHostException;
 import java.net.ProtocolException;
 import java.net.URL;
 
@@ -29,7 +30,7 @@ public class GpioMqtt implements GpioService, MqttCallback {
 	private MqttClient client;
 
 	private static final String USER_AGENT = "Mozilla/5.0";
-	private static final String POST_URL = "http://192.168.50.78/cm";
+	private static final String POST_URL = "http://192.168.4.101/cm";
 
 	public GpioMqtt(PhotoboothGpio a_photobooth) {
 		photobooth = a_photobooth;
@@ -125,13 +126,12 @@ public class GpioMqtt implements GpioService, MqttCallback {
 			}
 
 		} catch (ProtocolException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (MalformedURLException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+		} catch (NoRouteToHostException e) {
+			logger.error("Aucun chemin d'accès pour atteindre l'hôte cible (Host unreachable)");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
