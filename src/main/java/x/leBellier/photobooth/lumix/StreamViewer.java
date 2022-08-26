@@ -76,6 +76,12 @@ public class StreamViewer implements Runnable {
 	this.localUdpPort = udpPort;
 	this.localUdpSocket = new DatagramSocket(this.localUdpPort);
 
+	String url = String.format("http://%s/cam.cgi", cameraIp);
+
+	// [url]?mode=accctrl&type=req_acc&value=0&value2=Photobooth
+	// [url]?mode=camcmd&value=recmode
+	// [url]?mode=startstream&value=49199
+	// [url]?mode=getstate every 10sec
 	System.out.println("UDP Socket on " + this.cameraIp.getHostAddress() + ":" + this.localUdpPort + " created");
     }
 

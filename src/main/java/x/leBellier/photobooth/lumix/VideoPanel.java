@@ -30,7 +30,7 @@ public class VideoPanel extends JPanel {
 
     @Override
     public Dimension getPreferredSize() {
-	return new Dimension(640, 480);
+	return new Dimension(480, 480);
     }
 
     @Override
