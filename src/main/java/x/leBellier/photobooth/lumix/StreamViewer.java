@@ -11,9 +11,10 @@ import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.function.Consumer;
 
 import javax.imageio.ImageIO;
+
+import x.leBellier.photobooth.BeanSession;
 
 /**
  * Reads the camera video stream.
@@ -38,8 +39,6 @@ public class StreamViewer implements Runnable {
      */
     private final InetAddress cameraIp;
 
-    private final Consumer<BufferedImage> imageConsumer;
-
     private ExecutorService imageExecutor = Executors.newCachedThreadPool();
 
     /**
@@ -52,9 +51,8 @@ public class StreamViewer implements Runnable {
      * @throws UnknownHostException If the camera IP address cannot be parsed.
      * @throws SocketException      On network communication errors.
      */
-    public StreamViewer(Consumer<BufferedImage> imageConsumer, String cameraIp, int cameraNetmaskBitSize)
-	    throws UnknownHostException, SocketException {
-	this(imageConsumer, cameraIp, cameraNetmaskBitSize, 49199);
+    public StreamViewer(String cameraIp, int cameraNetmaskBitSize) throws UnknownHostException, SocketException {
+	this(cameraIp, cameraNetmaskBitSize, 49199);
     }
 
     /**
@@ -68,9 +66,9 @@ public class StreamViewer implements Runnable {
      * @throws UnknownHostException If the camera IP address cannot be parsed.
      * @throws SocketException      On network communication errors.
      */
-    public StreamViewer(Consumer<BufferedImage> imageConsumer, String cameraIp, int cameraNetmaskBitSize, int udpPort)
+    public StreamViewer(String cameraIp, int cameraNetmaskBitSize, int udpPort)
 	    throws UnknownHostException, SocketException {
-	this.imageConsumer = imageConsumer;
+
 	this.cameraIp = NetUtil.findLocalIpInSubnet(cameraIp, cameraNetmaskBitSize);
 
 	this.localUdpPort = udpPort;
@@ -143,10 +141,9 @@ public class StreamViewer implements Runnable {
 		localUdpSocket.receive(receivedPacket);
 
 		imageExecutor.submit(() -> {
-		    BufferedImage newImage = retrieveImage(receivedPacket);
-		    System.out
-			    .println("New image with size H = " + newImage.getHeight() + " W = " + newImage.getWidth());
-		    imageConsumer.accept(newImage);
+		    BeanSession.getInstance().setLiveStreamImage(retrieveImage(receivedPacket));
+//		    System.out.println("New image with size H = " + newImage.getHeight() + " W = " + newImage.getWidth());
+
 		});
 
 	    } catch (IOException e) {

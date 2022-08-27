@@ -30,7 +30,7 @@ public class LumixStreamViewer {
 	System.out.println(
 		"Trying to connect to camera " + cameraIp + " on subnet with mask size " + cameraNetMaskBitSize);
 	try {
-	    StreamViewer streamViewer = new StreamViewer(videoPanel::displayNewImage, cameraIp, cameraNetMaskBitSize);
+	    StreamViewer streamViewer = new StreamViewer(cameraIp, cameraNetMaskBitSize);
 	    streamViewerThread = new Thread(streamViewer);
 	    streamViewerThread.start();
 	} catch (SocketException e) {

@@ -25,3 +25,5 @@ hs_err_*.log
 src/main/resources/x/mvmn/gp2srv/web/static/js
 distrib/*
 distribution/*
+
+src/main/java/x/leBellier/photobooth/impl/MqttCredentials.java

@@ -1,212 +1,164 @@
 package x.leBellier.photobooth;
 
+import java.awt.image.BufferedImage;
 import java.io.File;
-import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Properties;
-import x.mvmn.gp2srv.GPhoto2Server;
-import x.mvmn.gp2srv.camera.CameraProvider;
-import x.mvmn.gp2srv.camera.CameraService;
-import x.mvmn.gp2srv.camera.service.impl.CameraServiceImpl;
-import x.mvmn.gp2srv.mock.service.impl.MockCameraServiceImpl;
-import x.mvmn.gp2srv.web.service.velocity.TemplateEngine;
-import x.mvmn.gp2srv.web.service.velocity.VelocityContextService;
-import x.mvmn.jlibgphoto2.api.GP2Camera;
-import x.mvmn.lang.util.Provider;
-import x.mvmn.log.PrintStreamLogger;
-import x.mvmn.log.api.Logger;
+
+import javax.swing.SwingUtilities;
+
+import org.apache.commons.jexl3.internal.TemplateEngine;
+
+import x.leBellier.photobooth.lumix.VideoPanel;
 
 /**
  *
  * @author Bruno
  */
-public class BeanSession implements Provider<TemplateEngine>, CameraProvider {
+public class BeanSession {
 
-	// Instance unique pr�-initialis�e
-	private static BeanSession INSTANCE = new BeanSession();
+    // Instance unique pr�-initialis�e
+    private static BeanSession INSTANCE = new BeanSession();
 
-	/**
-	 * Point d'acc�s pour l'instance unique du singleton
-	 */
-	public static synchronized BeanSession getInstance() {
-		return INSTANCE;
+    /**
+     * Point d'acc�s pour l'instance unique du singleton
+     */
+    public static synchronized BeanSession getInstance() {
+	return INSTANCE;
+    }
+
+    private final DateFormat sdf;
+    private final ImageUtils imageUtils;
+    private final File userHome;
+    private final File appHomeFolder;
+    private Integer initTime;
+    private Integer intervalTime;
+
+    private volatile TemplateEngine templateEngine;
+
+    private BufferedImage liveStreamImage;
+
+    private PhotoboothGpio gpio; // Singleton
+    private File imagesFolder; // Final
+
+    private VideoPanel videoPanel;
+    private HtmlEditorKitTest htmlPanel;
+
+    private String cameraIp = "192.168.50.73";
+    private Integer mask = 24;
+
+    // Constructeur priv�
+    private BeanSession() {
+	sdf = new SimpleDateFormat("yyyy-MM-dd_HHmmss");
+	imageUtils = new ImageUtils();
+
+	userHome = new File(System.getProperty("user.home"));
+	appHomeFolder = new File(userHome, ".gp2srv");
+	appHomeFolder.mkdir();
+
+	initTime = 5000;
+	intervalTime = 2000;
+
+	liveStreamImage = null;
+
+	videoPanel = new VideoPanel();
+	htmlPanel = new HtmlEditorKitTest();
+    }
+
+    public DateFormat getSdf() {
+	return sdf;
+    }
+
+    public ImageUtils getImageUtils() {
+	return imageUtils;
+    }
+
+    public File getUserHome() {
+	return userHome;
+    }
+
+    public File getAppHomeFolder() {
+	return appHomeFolder;
+    }
+
+    public Integer getInitTime() {
+	return initTime;
+    }
+
+    public void setInitTime(Integer initTime) {
+	this.initTime = initTime;
+    }
+
+    public Integer getIntervalTime() {
+	return intervalTime;
+    }
+
+    public void setIntervalTime(Integer intervalTime) {
+	this.intervalTime = intervalTime;
+    }
+
+    public BufferedImage getLiveStreamImage() {
+	return liveStreamImage;
+    }
+
+    public void setLiveStreamImage(BufferedImage liveStreamImage) {
+	this.liveStreamImage = liveStreamImage;
+	SwingUtilities.invokeLater(videoPanel::repaint);
+    }
+
+    public PhotoboothGpio getGpio() {
+	if (gpio == null) { // singleton
+	    gpio = new PhotoboothGpio();
 	}
+	return gpio;
+    }
 
-	private final DateFormat sdf;
-	private final ImageUtils imageUtils;
-	private final Logger logger;
-	private final File userHome;
-	private final File appHomeFolder;
-	private final VelocityContextService velocityContextService;
-	private Integer initTime;
-	private Integer intervalTime;
-
-	private volatile TemplateEngine templateEngine;
-
-	private volatile GP2Camera camera;
-	private CameraService cameraService;
-
-	private PhotoboothGpio gpio; // Singleton
-	private File imagesFolder; // Final
-
-	private boolean usemocks = false;
-
-	// Constructeur priv�
-	private BeanSession() {
-		sdf = new SimpleDateFormat("yyyy-MM-dd_HHmmss");
-		imageUtils = new ImageUtils();
-		logger = new PrintStreamLogger(System.out);
-
-		userHome = new File(System.getProperty("user.home"));
-		appHomeFolder = new File(userHome, ".gp2srv");
-		appHomeFolder.mkdir();
-
-		velocityContextService = new VelocityContextService();
-
-		initTime = 5000;
-		intervalTime = 2000;
+    public void setGpio(PhotoboothGpio gpio) {
+	if (gpio == null) { // final
+	    this.gpio = gpio;
 	}
+    }
 
-	public DateFormat getSdf() {
-		return sdf;
+    public File getImagesFolder() {
+	return imagesFolder;
+    }
+
+    public void setImagesFolder(String imageDldPath) {
+	if (imagesFolder != null) { // final set
+	    return;
 	}
-
-	public ImageUtils getImageUtils() {
-		return imageUtils;
+	if (imageDldPath == null || imageDldPath.trim().isEmpty()) {
+	    imageDldPath = new File(userHome, "gp2srv_images").getAbsolutePath();
 	}
-
-	public Logger getLogger() {
-		return logger;
+	imagesFolder = new File(imageDldPath);
+	if (!imagesFolder.exists()) {
+	    imagesFolder.mkdirs();
+	} else if (!imagesFolder.isDirectory()) {
+	    throw new RuntimeException("Not a directory: " + imagesFolder);
 	}
+    }
 
-	public File getUserHome() {
-		return userHome;
-	}
+    public VideoPanel getVideoPanel() {
+	return videoPanel;
+    }
 
-	public File getAppHomeFolder() {
-		return appHomeFolder;
-	}
+    public HtmlEditorKitTest getHtmlPanel() {
+	return htmlPanel;
+    }
 
-	public VelocityContextService getVelocityContextService() {
-		return velocityContextService;
-	}
+    public String getCameraIp() {
+	return cameraIp;
+    }
 
-	public Integer getInitTime() {
-		return initTime;
-	}
+    public void setCameraIp(String cameraIp) {
+	this.cameraIp = cameraIp;
+    }
 
-	public void setInitTime(Integer initTime) {
-		this.initTime = initTime;
-	}
+    public Integer getMask() {
+	return mask;
+    }
 
-	public Integer getIntervalTime() {
-		return intervalTime;
-	}
-
-	public void setIntervalTime(Integer intervalTime) {
-		this.intervalTime = intervalTime;
-	}
-
-	public PhotoboothGpio getGpio() {
-		if (gpio == null) { // singleton
-			gpio = new PhotoboothGpio();
-		}
-		return gpio;
-	}
-
-	public void setGpio(PhotoboothGpio gpio) {
-		if (gpio == null) { // final
-			this.gpio = gpio;
-		}
-	}
-
-	public File getImagesFolder() {
-		return imagesFolder;
-	}
-
-	public void setImagesFolder(String imageDldPath) {
-		if (imagesFolder != null) { // final set
-			return;
-		}
-		if (imageDldPath == null || imageDldPath.trim().isEmpty()) {
-			imageDldPath = new File(userHome, "gp2srv_images").getAbsolutePath();
-		}
-		imagesFolder = new File(imageDldPath);
-		if (!imagesFolder.exists()) {
-			imagesFolder.mkdirs();
-		} else if (!imagesFolder.isDirectory()) {
-			throw new RuntimeException("Not a directory: " + imagesFolder);
-		}
-	}
-
-	public TemplateEngine getTemplateEngine() {
-		return templateEngine;
-	}
-
-	public void setTemplateEngine() {
-		try {
-			final Map<String, String> templatesRegistrations = new HashMap<String, String>();
-			{
-				final Properties templatesListProps = new Properties();
-				templatesListProps.load(GPhoto2Server.class.getResourceAsStream(
-						TemplateEngine.DEFAULT_TEMPLATES_CLASSPATH_PREFIX + "templates_list.properties"));
-				for (Object templateNameObj : templatesListProps.keySet()) {
-					String key = templateNameObj.toString();
-					templatesRegistrations.put(key, templatesListProps.getProperty(key));
-				}
-				this.templateEngine = new TemplateEngine(templatesRegistrations);
-			}
-		} catch (IOException e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	public CameraService getCameraService() {
-		return cameraService;
-	}
-
-	public void setUseMock(Boolean usemocks) {
-		if (cameraService == null) { // final set
-			this.usemocks = usemocks;
-			if (usemocks) {
-				cameraService = new MockCameraServiceImpl(this);
-			} else {
-				cameraService = new CameraServiceImpl(this);
-			}
-		}
-	}
-
-	@Override
-	public GP2Camera getCamera() {
-		if (usemocks) {
-			return null;
-		} else {
-			return camera;
-		}
-	}
-
-	@Override
-	public void setCamera(GP2Camera camera) {
-		if (!usemocks) {
-			this.camera = camera;
-		}
-	}
-
-	@Override
-	public boolean hasCamera() {
-		if (usemocks) {
-			return true;
-		} else {
-			return camera != null;
-		}
-	}
-
-	@Override
-	public TemplateEngine provide() {
-		return templateEngine;
-	}
-
+    public void setMask(Integer mask) {
+	this.mask = mask;
+    }
 }
