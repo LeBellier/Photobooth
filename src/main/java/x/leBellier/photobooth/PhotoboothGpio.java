@@ -20,19 +20,22 @@ import x.leBellier.photobooth.impl.GpioMqtt;
 public class PhotoboothGpio extends Thread {
 
     public enum StateMachine {
-	StandBy, Snap, PrintPhoto, WaitPrintAck, PositivePrintAck, NegativePrintAck
+	StandBy, Snap, PhotoAssembly, WaitPrintAck, PositivePrintAck, NegativePrintAck
     }
 
     public final boolean EnabedPrinting = true;
 
-    private StateMachine state = StateMachine.StandBy;
+    private StateMachine currentState = StateMachine.StandBy;
+    private StateMachine lastState = StateMachine.StandBy;
 
     public StateMachine getCurrentState() {
-	return state;
+	return currentState;
     }
 
     public void setCurrentState(StateMachine state) {
-	this.state = state;
+	lastState = currentState;
+	currentState = state;
+
     }
 
     private GpioService gpio;
@@ -54,18 +57,24 @@ public class PhotoboothGpio extends Thread {
 
 	    System.out.println("Press enter to snap :p");
 	    while (true) {
-		System.out.println("Current State = " + state);
+		StateMachine state_start = getCurrentState();
+		if (lastState != state_start)
+		    System.out.println("Current State = " + state_start);
 
-		switch (state) {
+		switch (state_start) {
 		case StandBy:
+		    if (lastState != state_start) {
+			/* TODO: Set livestream image in video panel */
+			gpio.setBtnLed();
+		    }
+
 		    BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
-		    gpio.setBtnLed();
 		    if (br.ready()) {
 			String s = br.readLine();
 			if (s.contains("stop")) {
 			    throw new InterruptedException();
 			}
-			state = StateMachine.Snap;
+			setCurrentState(StateMachine.Snap);
 
 		    }
 		    break;
@@ -80,13 +89,14 @@ public class PhotoboothGpio extends Thread {
 			while (snap < 4) {
 			    gpio.setBtnLed();
 
-			    if (snap == 0) {
-				// logger.debug("Blink long : " + beanSession.getInitTime());
-				blinkRampe(blinking, beanSession.getInitTime());
-			    } else {
-				// logger.debug("Blink court : " + beanSession.getIntervalTime());
-				blinkRampe(blinking, beanSession.getIntervalTime());
-			    }
+			    // Debug
+//			    if (snap == 0) {
+//				// logger.debug("Blink long : " + beanSession.getInitTime());
+//				blinkRampe(blinking, beanSession.getInitTime());
+//			    } else {
+//				// logger.debug("Blink court : " + beanSession.getIntervalTime());
+//				blinkRampe(blinking, beanSession.getIntervalTime());
+//			    }
 			    gpio.resetBtnLed();
 			    System.out.println("SNAP !!!!");
 
@@ -101,32 +111,38 @@ public class PhotoboothGpio extends Thread {
 			    photoFilenames.add(output);
 
 			}
-			state = StateMachine.PrintPhoto;
+			System.out.println("ready for next round");
+			gpio.resetBlueLed();
+
+			// Montage
+
+			setCurrentState(StateMachine.PhotoAssembly);
 		    } catch (Exception e) {
 			e.printStackTrace();
 			System.out.println(e.getMessage());
-		    } finally {
-			gpio.resetBlueLed();
-			System.out.println("ready for next round");
-			state = StateMachine.StandBy;
+			setCurrentState(StateMachine.StandBy);
 		    }
 		    break;
-		case PrintPhoto:
-		    if (!EnabedPrinting) {
-			state = StateMachine.StandBy;
-		    } else {
-			System.out.println("please wait while your photos print...");
-			gpio.setBlueLed();
-			path = String.format("%s/Montage%s.jpg", beanSession.getImagesFolder(),
-				beanSession.getSdf().format(new Date()));
+		case PhotoAssembly:
+		    System.out.println("Please wait I make assembly...");
+		    gpio.setBlueLed();
+		    path = String.format("%s/Montage%s.jpg", beanSession.getImagesFolder(),
+			    beanSession.getSdf().format(new Date()));
 
-			System.out.println(String.format("%s/%s", beanSession.getImagesFolder(), "dessin.png"));
+		    System.out.println(String.format("%s/%s", beanSession.getImagesFolder(), "dessin.png"));
+		    try {
 			beanSession.getImageUtils().append4mariage(beanSession.getImagesFolder(), photoFilenames, path);
-
-			/* TODO: Set Static image in video panel */
-
+		    } catch (Exception e) {
+			e.printStackTrace();
+			System.out.println(e.getMessage());
+			setCurrentState(StateMachine.StandBy);
+		    }
+		    /* TODO: Set Static image in video panel */
+		    if (!EnabedPrinting) {
+			setCurrentState(StateMachine.StandBy);
+		    } else {
 			System.out.println("Do you want to print ?");
-			state = StateMachine.WaitPrintAck;
+			setCurrentState(StateMachine.WaitPrintAck);
 		    }
 
 		    break;
@@ -136,17 +152,17 @@ public class PhotoboothGpio extends Thread {
 		    System.out.println("Jattends");
 		    break;
 		case NegativePrintAck:
-		    /* TODO: Set livestream image in video panel */
 		    System.out.println("Jimprime pas  c'est de la merde");
-		    state = StateMachine.StandBy;
+		    setCurrentState(StateMachine.StandBy);
 		    break;
 		case PositivePrintAck:
-		    /* TODO: Set livestream image in video panel */
 		    beanSession.getImageUtils().printImage(path);
 		    System.out.println("Jimprime");
-		    state = StateMachine.StandBy;
+		    setCurrentState(StateMachine.StandBy);
 		    break;
 		}
+		if (state_start == getCurrentState())
+		    lastState = state_start;
 
 		// TODO: implement a reboot button
 		// Wait to ensure that print queue doesn't pile up

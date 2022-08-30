@@ -57,7 +57,7 @@ public class GpioRaspberry implements GpioService, GpioPinListenerDigital {
 	    break;
 	case Snap:
 	    break;
-	case PrintPhoto:
+	case PhotoAssembly:
 	    break;
 	case WaitPrintAck:
 	    if (event.getPin() == btnReset) {

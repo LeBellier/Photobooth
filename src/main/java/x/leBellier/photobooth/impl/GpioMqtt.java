@@ -156,7 +156,7 @@ public class GpioMqtt implements GpioService, MqttCallback {
 	    break;
 	case Snap:
 	    break;
-	case PrintPhoto:
+	case PhotoAssembly:
 	    break;
 	case WaitPrintAck:
 	    if (topic.contains("POWER3")) {
